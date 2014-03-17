@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    public class Run
+    public class Program
     {
         [STAThread]
         static void Main()
