@@ -1,8 +1,10 @@
 
 // GaGa.
 
+
 using System;
 using System.Windows.Forms;
+
 
 namespace GaGa
 {
@@ -11,9 +13,7 @@ namespace GaGa
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run();
+            Application.Run(new GaGa());
         }
     }
 }

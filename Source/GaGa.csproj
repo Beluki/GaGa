@@ -38,7 +38,13 @@
         <Reference Include="WindowsBase" />
     </ItemGroup>
     <ItemGroup>
+        <EmbeddedResource Include="Resources\play.ico" />
+        <EmbeddedResource Include="Resources\stop.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="GaGa.cs" />
         <Compile Include="Program.cs" />
+        <Compile Include="Utils.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
