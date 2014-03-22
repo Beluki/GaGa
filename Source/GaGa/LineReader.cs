@@ -13,12 +13,12 @@ namespace GaGa
     internal class LineReader
     {
         private StreamReader reader;
-        private int line;
+        private int current_line;
 
         public LineReader(Stream stream)
         {
             reader = new StreamReader(stream);
-            line = 0;
+            current_line = 0;
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace GaGa
         /// </summary>
         public int LineNumber()
         {
-            return line;
+            return current_line;
         }
 
         /// <summary>
@@ -37,8 +37,9 @@ namespace GaGa
         /// </returns>
         public String ReadLine()
         {
-            line++;
-            return reader.ReadLine();
+            String line = reader.ReadLine();
+            current_line++;
+            return line;
         }
     }
 }
