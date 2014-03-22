@@ -19,8 +19,7 @@ namespace GaGa
         /// Load an Icon from a given assembly embedded resource name.
         /// </summary>
         /// <param name="resource">
-        /// The embedded resource full path as a string, including namespace,
-        /// such as "GaGa.Resources.play.ico".
+        /// The embedded resource full path as a string, including namespace.
         /// </param>
         public static Icon LoadIconFromResource(String resource)
         {
