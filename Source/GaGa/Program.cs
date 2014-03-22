@@ -1,5 +1,6 @@
 ﻿
 // GaGa.
+// A lightweight radio player for the Windows tray.
 
 
 using System;

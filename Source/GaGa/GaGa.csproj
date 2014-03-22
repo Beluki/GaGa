@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GaGa.cs" />
-    <Compile Include="LineReader.cs" />
+    <Compile Include="StreamsINIFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
