@@ -61,7 +61,7 @@ namespace GaGa
         /// <param name="filepath">
         /// File path as a string.
         /// </param>
-        public static IEnumerable<string> ReadLines(String filepath)
+        public static IEnumerable<String> ReadLines(String filepath)
         {
             String line;
             using (StreamReader reader = File.OpenText(filepath))

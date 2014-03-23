@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    public class Program
+    internal class Program
     {
         /// <summary>
         /// The main entry point for the application.

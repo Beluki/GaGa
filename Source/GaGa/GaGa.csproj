@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="GaGa.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="StreamsMenuParsingError.cs" />
     <Compile Include="StreamsMenuLoader.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
@@ -59,7 +58,7 @@
     <Content Include="Resources\stop.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\streams.ini" />
+    <EmbeddedResource Include="Resources\default-streams.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

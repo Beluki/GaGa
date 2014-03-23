@@ -18,13 +18,18 @@ namespace GaGa
     public class GaGa : ApplicationContext
     {
         // resources:
-        private Icon play_icon;
-        private Icon stop_icon;
+        private Icon playIcon;
+        private Icon stopIcon;
 
         // gui components:
         private Container container;
         private NotifyIcon icon;
         private ContextMenuStrip menu;
+
+        // non-dynamic context menu items:
+        private ToolStripMenuItem editItem;
+        private ToolStripMenuItem errorItem;
+        private ToolStripMenuItem exitItem;
 
         // menu loader:
         private StreamsMenuLoader menuloader;
@@ -44,36 +49,80 @@ namespace GaGa
         private void Initialize()
         {
             // load resources:
-            play_icon = Utils.LoadIconFromResource("GaGa.Resources.play.ico");
-            stop_icon = Utils.LoadIconFromResource("GaGa.Resources.stop.ico");
+            playIcon = Utils.LoadIconFromResource("GaGa.Resources.play.ico");
+            stopIcon = Utils.LoadIconFromResource("GaGa.Resources.stop.ico");
 
             // load gui components:
             container = new Container();
             icon = new NotifyIcon(container);
             menu = new ContextMenuStrip();
-            
-            icon.Icon = play_icon;
+
             icon.ContextMenuStrip = menu;
+            icon.Icon = playIcon;
             icon.Text = "GaGa";
             icon.Visible = true;
 
             menu.Opening += new CancelEventHandler(OnOpenMenu);
 
+            // non-dynamic context menu items:
+            editItem = new ToolStripMenuItem("Edit menu");
+            errorItem = new ToolStripMenuItem("streams.ini error (click for details");
+            exitItem = new ToolStripMenuItem("Exit");
+                
             // load dynamic menu:
-            menuloader = new StreamsMenuLoader("streams.ini", "GaGa.Resources.streams.ini");
+            menuloader = new StreamsMenuLoader("streams.ini", "GaGa.Resources.default-streams.ini");
 
             // load media player instance:
             player = new MediaPlayer();            
         }
 
+        /// <summary>
+        /// Recreate the context menu when needed.
+        /// Create alternative menues on errors.
+        /// </summary>
+        private void MaybeRecreateMenu()
+        {
+            try
+            {
+                Boolean updated = menuloader.MaybeReload();
+                if (updated)
+                {
+                    menu.Items.Clear();
+                    menu.Items.AddRange(menuloader.Items);
+                    menu.Items.Add(new ToolStripSeparator());
+                    menu.Items.Add(editItem);
+                    editItem.Enabled = true;
+                }
+            }
+
+            catch (StreamsMenuLoaderParsingError ex)
+            {
+                menu.Items.Clear();
+                menu.Items.Add(errorItem);
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add(editItem);
+                editItem.Enabled = true;
+            }
+
+            catch (Exception ex)
+            {
+                menu.Items.Clear();
+                menu.Items.Add(errorItem);
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add(editItem);
+                editItem.Enabled = false;
+            }
+            finally
+            {
+                menu.Items.Add(exitItem);
+            }
+        }
+
         private void OnOpenMenu(Object sender, CancelEventArgs e)
         {
             e.Cancel = false;
- 
             menu.SuspendLayout();
-            menu.Items.Clear();
-            menuloader.ParseStreamsFile();
-            ToolStripManager.Merge(menuloader.menu, menu);
+            MaybeRecreateMenu();
             menu.ResumeLayout();
         }
     }
