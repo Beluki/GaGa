@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A lightweight radio player for the Windows tray.
+// A single icon radio player on the Windows notification area.
 
 
 using System;
@@ -17,28 +17,31 @@ namespace GaGa
     /// </summary>
     public class GaGa : ApplicationContext
     {
-        // embedded icons:
+        // resources:
         private Icon play_icon;
         private Icon stop_icon;
 
         // gui components:
         private Container container;
-        private ContextMenuStrip menu;
         private NotifyIcon icon;
+        private ContextMenuStrip menu;
 
-        // actual player instance:
+        // menu loader:
+        private StreamsMenuLoader menuloader;
+
+        // player instance:
         private MediaPlayer player;
-        private StreamsINIFile streams;
+
 
         public GaGa()
         {
-            InitializeComponents();
+            Initialize();
         }
 
         /// <summary>
-        /// Initialize the GUI.
+        /// Initialize everything.
         /// </summary>
-        private void InitializeComponents()
+        private void Initialize()
         {
             // load resources:
             play_icon = Utils.LoadIconFromResource("GaGa.Resources.play.ico");
@@ -46,51 +49,32 @@ namespace GaGa
 
             // load gui components:
             container = new Container();
-            menu = new ContextMenuStrip();
-
             icon = new NotifyIcon(container);
+            menu = new ContextMenuStrip();
+            
             icon.Icon = play_icon;
             icon.ContextMenuStrip = menu;
             icon.Text = "GaGa";
             icon.Visible = true;
-            icon.MouseClick += new MouseEventHandler(OnIconMouseClick);
 
-            // media player and streams file instance:
-            player = new MediaPlayer();
-            streams = new StreamsINIFile("streams.ini", "GaGa.Resources.streams.ini");
+            menu.Opening += new CancelEventHandler(OnOpenMenu);
+
+            // load dynamic menu:
+            menuloader = new StreamsMenuLoader("streams.ini", "GaGa.Resources.streams.ini");
+
+            // load media player instance:
+            player = new MediaPlayer();            
         }
 
-        /// <summary>
-        /// Show an error balloon for about 5 seconds.
-        /// </summary>
-        /// <param name="title">
-        /// Balloon title as a string.
-        /// </param>
-        /// <param name="message">
-        /// Error message.
-        /// </param>
-        private void ErrorBalloon(String title, String message)
+        private void OnOpenMenu(Object sender, CancelEventArgs e)
         {
-            icon.ShowBalloonTip(5, title, message, ToolTipIcon.Error);
-        }
-
-        private void OnIconMouseRightClick()
-        {
-            streams.EnsureExists();
-
-            if (streams.IsOutdated())
-            {
-                menu.Items.Clear();
-                streams.AddToContextMenu(menu);
-            }
-
-            menu.Show();
-        }
-
-        private void OnIconMouseClick(Object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-               OnIconMouseRightClick();
+            e.Cancel = false;
+ 
+            menu.SuspendLayout();
+            menu.Items.Clear();
+            menuloader.ParseStreamsFile();
+            ToolStripManager.Merge(menuloader.menu, menu);
+            menu.ResumeLayout();
         }
     }
 }

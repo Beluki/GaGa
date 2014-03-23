@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A lightweight radio player for the Windows tray.
+// A single icon radio player on the Windows notification area.
 
 
 using System;
@@ -13,15 +13,16 @@ using System.Reflection;
 namespace GaGa
 {
     /// <summary>
-    /// Standalone utilities for the GaGa main class.
+    /// Stand-alone utilities.
     /// </summary>
     internal static class Utils
     {
         /// <summary>
-        /// Load an Icon from a given assembly embedded resource name.
+        /// Load an Icon from an embedded resource.
         /// </summary>
         /// <param name="resource">
-        /// The embedded resource full path as a string, including namespace.
+        /// The resource path as a string, including namespace.
+        /// Example: "GaGa.Resources.play.ico".
         /// </param>
         public static Icon LoadIconFromResource(String resource)
         {
@@ -36,10 +37,11 @@ namespace GaGa
         /// Copy an embedded resource to the local filesystem.
         /// </summary>
         /// <param name="resource">
-        /// The embedded resource full path as a string, including namespace.
+        /// The resource path as a string, including namespace.
+        /// Example: "GaGa.Resources.play.ico".
         /// </param>
         /// <param name="filepath">
-        /// Local path to copy the file to as a string.
+        /// Destination path as a string.
         /// </param>
         public static void CopyResource(String resource, String filepath)
         {
@@ -56,13 +58,13 @@ namespace GaGa
         /// <summary>
         /// Iterate all lines from an UTF-8 encoded text file.
         /// </summary>
-        /// <param name="filename">
+        /// <param name="filepath">
         /// File path as a string.
         /// </param>
-        public static IEnumerable<string> ReadLines(String filename)
+        public static IEnumerable<string> ReadLines(String filepath)
         {
             String line;
-            using (StreamReader reader = File.OpenText(filename))
+            using (StreamReader reader = File.OpenText(filepath))
             {
                 while ((line = reader.ReadLine()) != null)
                 {
