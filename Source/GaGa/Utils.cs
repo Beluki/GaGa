@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A single icon radio player on the Windows notification area.
+// A simple radio player running on the Windows notification area.
 
 
 using System;
@@ -22,7 +22,6 @@ namespace GaGa
         /// </summary>
         /// <param name="resource">
         /// The resource path as a string, including namespace.
-        /// Example: "GaGa.Resources.play.ico".
         /// </param>
         public static Icon LoadIconFromResource(String resource)
         {
@@ -38,7 +37,6 @@ namespace GaGa
         /// </summary>
         /// <param name="resource">
         /// The resource path as a string, including namespace.
-        /// Example: "GaGa.Resources.play.ico".
         /// </param>
         /// <param name="filepath">
         /// Destination path as a string.
@@ -61,7 +59,7 @@ namespace GaGa
         /// <param name="filepath">
         /// File path as a string.
         /// </param>
-        public static IEnumerable<String> ReadLines(String filepath)
+        public static IEnumerable<String> ReadLineByLine(String filepath)
         {
             String line;
             using (StreamReader reader = File.OpenText(filepath))

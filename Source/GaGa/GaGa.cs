@@ -1,21 +1,20 @@
 ﻿
 // GaGa.
-// A single icon radio player on the Windows notification area.
+// A simple radio player running on the Windows notification area.
 
 
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using System.Windows.Media;
+
 
 namespace GaGa
 {
     /// <summary>
     /// Actual implementation.
     /// </summary>
-    public class GaGa : ApplicationContext
+    internal class GaGa : ApplicationContext
     {
         // resources:
         private Icon playIcon;
@@ -26,104 +25,168 @@ namespace GaGa
         private NotifyIcon icon;
         private ContextMenuStrip menu;
 
-        // non-dynamic context menu items:
+        // non-loader menu items:
         private ToolStripMenuItem editItem;
-        private ToolStripMenuItem errorItem;
         private ToolStripMenuItem exitItem;
+        private ToolStripMenuItem errorOpeningItem;
+        private ToolStripMenuItem errorParsingItem;
 
-        // menu loader:
-        private StreamsMenuLoader menuloader;
-
-        // player instance:
-        private MediaPlayer player;
-
+        // menu file and loader:
+        private StreamsFile streamsFile;
+        private StreamsMenuLoader menuLoader;
 
         public GaGa()
         {
-            Initialize();
-        }
-
-        /// <summary>
-        /// Initialize everything.
-        /// </summary>
-        private void Initialize()
-        {
-            // load resources:
+            // resources:
             playIcon = Utils.LoadIconFromResource("GaGa.Resources.play.ico");
             stopIcon = Utils.LoadIconFromResource("GaGa.Resources.stop.ico");
 
-            // load gui components:
+            // gui components:
             container = new Container();
-            icon = new NotifyIcon(container);
-            menu = new ContextMenuStrip();
 
-            icon.ContextMenuStrip = menu;
+            icon = new NotifyIcon(container);
             icon.Icon = playIcon;
             icon.Text = "GaGa";
             icon.Visible = true;
 
-            menu.Opening += new CancelEventHandler(OnOpenMenu);
+            menu = new ContextMenuStrip();
+            menu.Opening += menu_Opening;
+            icon.ContextMenuStrip = menu;
 
-            // non-dynamic context menu items:
-            editItem = new ToolStripMenuItem("Edit menu");
-            errorItem = new ToolStripMenuItem("streams.ini error (click for details");
+            // non-loader menu items:
+            editItem = new ToolStripMenuItem("Edit streams file");
             exitItem = new ToolStripMenuItem("Exit");
-                
-            // load dynamic menu:
-            menuloader = new StreamsMenuLoader("streams.ini", "GaGa.Resources.default-streams.ini");
+            errorOpeningItem = new ToolStripMenuItem("Unable to open streams file (click for details)");
+            errorParsingItem = new ToolStripMenuItem("Unable to parse streams file (click for details)");
 
-            // load media player instance:
-            player = new MediaPlayer();            
+            errorOpeningItem.Click += errorOpeningItemClick;
+            errorParsingItem.Click += errorParsingItemClick;
+
+            // menu file and loader:
+            streamsFile = new StreamsFile("streams.ini", "GaGa.Resources.default-streams.ini");
+            menuLoader = new StreamsMenuLoader(streamsFile);
+        }
+
+        /// <summary>
+        /// Re-create the context menu on changes from the menuloader.
+        /// </summary>
+        private void ReloadContextMenuOnChanges()
+        {
+            Boolean updated = menuLoader.MaybeReload();
+
+            if (updated)
+            {
+                menu.Items.Clear();
+                menu.Items.AddRange(menuLoader.Items);
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add(editItem);
+                menu.Items.Add(exitItem);
+
+                editItem.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Create a context menu containing a clickable error item.
+        /// The item contains the raised exception in the Tag property.
+        /// </summary>
+        /// <param name="exception">
+        /// Error that happened when trying to load the menu.
+        /// </param>
+        private void LoadErrorContextMenu(Exception exception)
+        {
+            menu.Items.Clear();
+
+            // on parsing errors, allow editing:
+            if (exception is StreamsMenuLoaderParsingError)
+            {
+                errorParsingItem.Tag = exception;
+                menu.Items.Add(errorParsingItem);
+                editItem.Enabled = true;
+            }
+            // otherwise it's an IO error, the file may not even exist:
+            else
+            {
+                errorOpeningItem.Tag = exception;
+                menu.Items.Add(errorOpeningItem);
+                editItem.Enabled = false;
+            }
+
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(editItem);
+            menu.Items.Add(exitItem);
         }
 
         /// <summary>
         /// Recreate the context menu when needed.
-        /// Create alternative menues on errors.
+        /// Create an alternative menu on errors.
         /// </summary>
-        private void MaybeRecreateMenu()
+        private void UpdateMenu()
         {
             try
             {
-                Boolean updated = menuloader.MaybeReload();
-                if (updated)
-                {
-                    menu.Items.Clear();
-                    menu.Items.AddRange(menuloader.Items);
-                    menu.Items.Add(new ToolStripSeparator());
-                    menu.Items.Add(editItem);
-                    editItem.Enabled = true;
-                }
+                ReloadContextMenuOnChanges();
             }
-
-            catch (StreamsMenuLoaderParsingError ex)
+            catch (Exception exception)
             {
-                menu.Items.Clear();
-                menu.Items.Add(errorItem);
-                menu.Items.Add(new ToolStripSeparator());
-                menu.Items.Add(editItem);
-                editItem.Enabled = true;
-            }
-
-            catch (Exception ex)
-            {
-                menu.Items.Clear();
-                menu.Items.Add(errorItem);
-                menu.Items.Add(new ToolStripSeparator());
-                menu.Items.Add(editItem);
-                editItem.Enabled = false;
-            }
-            finally
-            {
-                menu.Items.Add(exitItem);
+                LoadErrorContextMenu(exception);
             }
         }
 
-        private void OnOpenMenu(Object sender, CancelEventArgs e)
+        /// <summary>
+        /// Fired when the user clicks on the error details
+        /// when the streams file can't be loaded.
+        /// Shows a MessageBox with the error.
+        /// </summary>
+        private void errorOpeningItemClick(Object sender, EventArgs e)
+        {
+            ToolStripItem item = sender as ToolStripItem;
+            Exception exception = item.Tag as Exception;
+
+            String caption = "Error opening streams file";
+            String text = exception.Message;
+
+            MessageBox.Show(text, caption);
+        }
+
+        /// <summary>
+        /// Fired when the user clicks on the error details
+        /// when the streams file can't be parsed.
+        /// Shows a MessageBox with the error and asks to edit the streams file.
+        /// </summary>
+        private void errorParsingItemClick(Object sender, EventArgs e)
+        {
+            ToolStripItem item = sender as ToolStripItem;
+            StreamsMenuLoaderParsingError exception = item.Tag as StreamsMenuLoaderParsingError;
+
+            // Example (without padding newlines):
+            // streams.ini error at line 15
+            // Invalid syntax
+            // Line text
+            // Do you want to edit the streams file now?
+
+            String text = String.Format(
+                "{0} error at line {1} \n{2} \n\n{3}\n\n" +
+                "Do you want to edit the streams file now?",
+                exception.Path,
+                exception.LineNumber,
+                exception.Message,
+                exception.Line);
+
+            String caption = "Error reading streams file";
+            DialogResult result = MessageBox.Show(text, caption, MessageBoxButtons.YesNo);
+        }
+
+        /// <summary>
+        /// Fired when the context menu is opening.
+        /// </summary>
+        private void menu_Opening(Object sender, CancelEventArgs e)
         {
             e.Cancel = false;
             menu.SuspendLayout();
-            MaybeRecreateMenu();
+            UpdateMenu();
             menu.ResumeLayout();
         }
     }
 }
+
