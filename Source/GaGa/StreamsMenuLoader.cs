@@ -123,7 +123,12 @@ namespace GaGa
                     radio.ToolTipText = uri;
                     root.Add(radio);
                 }
+
+                // unknown:
+                else ThrowParsingError("Invalid syntax.", line, linenumber);
             }
+
+            lastUpdated = file.GetLastWriteTime();
         }
     }
 }
