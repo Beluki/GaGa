@@ -12,19 +12,19 @@ namespace GaGa
 {
     internal class StreamsFile
     {
-        public readonly String filepath;
-        public readonly String resource;
+        public readonly String FilePath;
+        public readonly String Resource;
 
         /// <summary>
-        /// Maintains an UTF-8 encoded text file that is recreated
+        /// Maintains an UTF8-encoded text file that is recreated
         /// from an embedded resource upon reading when it doesn't exist.
         /// </summary>
         /// <param name="filepath">File path for the target file.</param>
-        /// <param name="resource">Resource path to recreate it.</param>
+        /// <param name="resource">Path to the resource used to recreate it.</param>
         public StreamsFile(String filepath, String resource)
         {
-            this.filepath = filepath;
-            this.resource = resource;
+            this.FilePath = filepath;
+            this.Resource = resource;
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace GaGa
         /// </summary>
         public DateTime GetLastWriteTime()
         {
-            return File.GetLastWriteTime(filepath);
+            return File.GetLastWriteTime(FilePath);
         }
 
         /// <summary>
@@ -40,10 +40,10 @@ namespace GaGa
         /// </summary>
         public IEnumerable<String> ReadLineByLine()
         {
-            if (!File.Exists(filepath))
-                Utils.CopyResource(resource, filepath);
+            if (!File.Exists(FilePath))
+                Utils.CopyResource(Resource, FilePath);
 
-            return Utils.ReadLineByLine(filepath);
+            return Utils.ReadLineByLine(FilePath);
         }
     }
 }

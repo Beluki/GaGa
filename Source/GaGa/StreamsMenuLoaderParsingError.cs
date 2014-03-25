@@ -10,8 +10,7 @@ namespace GaGa
 {
     internal class StreamsMenuLoaderParsingError : Exception
     {
-        public readonly String Message;
-        public readonly String Path;
+        public readonly String FilePath;
         public readonly String Line;
         public readonly int LineNumber;
 
@@ -19,13 +18,13 @@ namespace GaGa
         /// Raised by the StreamsMenuLoader on a parsing error.
         /// </summary>
         /// <param name="message">Error message.</param>
-        /// <param name="path">File path for the incorrect file.</param>
+        /// <param name="filepath">File path for the incorrect file.</param>
         /// <param name="line">Line text for the incorrect line.</param>
         /// <param name="linenumber">Line number where the error happened.</param>
-        public StreamsMenuLoaderParsingError(String message, String path, String line, int linenumber)
+        public StreamsMenuLoaderParsingError(String message, String filepath, String line, int linenumber)
+            : base(message)
         {
-            this.Message = message;
-            this.Path = path;
+            this.FilePath = filepath;
             this.Line = line;
             this.LineNumber = linenumber;
         }

@@ -11,9 +11,6 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    /// <summary>
-    /// Actual implementation.
-    /// </summary>
     internal class GaGa : ApplicationContext
     {
         // resources:
@@ -35,6 +32,9 @@ namespace GaGa
         private StreamsFile streamsFile;
         private StreamsMenuLoader menuLoader;
 
+        /// <summary>
+        /// Actual implementation.
+        /// </summary>
         public GaGa()
         {
             // resources:
@@ -50,7 +50,7 @@ namespace GaGa
             icon.Visible = true;
 
             menu = new ContextMenuStrip();
-            menu.Opening += menu_Opening;
+            menu.Opening += new CancelEventHandler(menu_Opening);
             icon.ContextMenuStrip = menu;
 
             // non-loader menu items:
@@ -72,7 +72,7 @@ namespace GaGa
         /// </summary>
         private void ReloadContextMenuOnChanges()
         {
-            if (menuLoader.CanUpdate)
+            if (menuLoader.HasChanged())
             {
                 menu.Items.Clear();
                 menuLoader.LoadTo(menu);
@@ -165,7 +165,7 @@ namespace GaGa
             String text = String.Format(
                 "{0} error at line {1} \n{2} \n\n{3}\n\n" +
                 "Do you want to edit the streams file now?",
-                exception.Path,
+                exception.FilePath,
                 exception.LineNumber,
                 exception.Message,
                 exception.Line);
@@ -179,13 +179,15 @@ namespace GaGa
         /// </summary>
         private void menu_Opening(Object sender, CancelEventArgs e)
         {
+            Point cursorPosition = Control.MousePosition;
+
             e.Cancel = false;
             menu.SuspendLayout();
             UpdateMenu();
             menu.ResumeLayout();
 
             // position workaround, .NET tend to get confused on size changes:
-            menu.Show(Cursor.Position.X - menu.Width, Cursor.Position.Y - menu.Height);
+            menu.Show(cursorPosition.X - menu.Width, cursorPosition.Y - menu.Height);
         }
     }
 }
