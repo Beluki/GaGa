@@ -43,7 +43,7 @@ namespace GaGa
             if (!File.Exists(filepath))
                 Utils.CopyResource(resource, filepath);
 
-            return Utils.ReadLineByLine(this.filepath);
+            return Utils.ReadLineByLine(filepath);
         }
     }
 }

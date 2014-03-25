@@ -72,16 +72,13 @@ namespace GaGa
         /// </summary>
         private void ReloadContextMenuOnChanges()
         {
-            Boolean updated = menuLoader.MaybeReload();
-
-            if (updated)
+            if (menuLoader.CanUpdate)
             {
                 menu.Items.Clear();
-                menu.Items.AddRange(menuLoader.Items);
+                menuLoader.LoadTo(menu);
                 menu.Items.Add(new ToolStripSeparator());
                 menu.Items.Add(editItem);
                 menu.Items.Add(exitItem);
-
                 editItem.Enabled = true;
             }
         }
@@ -186,6 +183,9 @@ namespace GaGa
             menu.SuspendLayout();
             UpdateMenu();
             menu.ResumeLayout();
+
+            // position workaround, .NET tend to get confused on size changes:
+            menu.Show(Cursor.Position.X - menu.Width, Cursor.Position.Y - menu.Height);
         }
     }
 }

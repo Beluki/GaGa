@@ -12,7 +12,6 @@ namespace GaGa
     internal class StreamsMenuLoader
     {
         private StreamsFile file;
-        private ContextMenuStrip menu;
         private DateTime lastUpdated;
 
         /// <summary>
@@ -23,31 +22,16 @@ namespace GaGa
         public StreamsMenuLoader(StreamsFile file)
         {
             this.file = file;
-            this.menu = new ContextMenuStrip();
             this.lastUpdated = DateTime.MinValue;
         }
 
         /// <summary>
-        /// Get all the items.
+        /// Returns true or false depending on whether the
+        /// streams file has been updated.
         /// </summary>
-        public ToolStripItemCollection Items
+        public Boolean CanUpdate
         {
-            get { return menu.Items; }
-        }
-
-        /// <summary>
-        /// Reload the items if the streams file changed since the last update.
-        /// Returns true or false depending on whether a reload was needed.
-        /// </summary>
-        public Boolean MaybeReload()
-        {
-            DateTime file_last_modified = file.GetLastWriteTime();
-            if (lastUpdated == file_last_modified)
-                return false;
-
-            Reload();
-            lastUpdated = file_last_modified;
-            return true;
+            get { return lastUpdated != file.GetLastWriteTime(); }
         }
 
         /// <summary>
@@ -62,11 +46,11 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Reload the items from the streams file.
+        /// Reload the items from the streams file and add
+        /// them to the given menu.
         /// </summary>
-        private void Reload()
+        public void LoadTo(ContextMenuStrip menu)
         {
-            menu.Items.Clear();
             ToolStripItemCollection root = menu.Items;
             int linenumber = 0;
 
@@ -93,7 +77,7 @@ namespace GaGa
                         ThrowParsingError("Empty menu name.", line, linenumber);
 
                     ToolStripMenuItem submenu = new ToolStripMenuItem(name);
-                    root.Add(submenu);
+                    menu.Items.Add(submenu);
                     root = submenu.DropDownItems;
                 }
 
@@ -121,6 +105,8 @@ namespace GaGa
                 // unknown:
                 else ThrowParsingError("Invalid syntax.", line, linenumber);
             }
+
+            lastUpdated = file.GetLastWriteTime();
         }
     }
 }
