@@ -15,7 +15,7 @@ namespace GaGa
         public readonly int LineNumber;
 
         /// <summary>
-        /// Raised by the StreamsMenuLoader on a parsing error.
+        /// Raised by StreamsMenuLoader on a parsing error.
         /// </summary>
         /// <param name="message">Error message.</param>
         /// <param name="filepath">File path for the incorrect file.</param>

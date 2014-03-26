@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GaGa", "GaGa\GaGa.csproj", "{AE76C734-EE73-45ED-85D9-E43BA51E2229}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GaGa", "GaGa\GaGa.csproj", "{2A075BBD-935C-4838-872A-76EEBA3DA300}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +9,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AE76C734-EE73-45ED-85D9-E43BA51E2229}.Debug|x86.ActiveCfg = Debug|x86
-		{AE76C734-EE73-45ED-85D9-E43BA51E2229}.Debug|x86.Build.0 = Debug|x86
-		{AE76C734-EE73-45ED-85D9-E43BA51E2229}.Release|x86.ActiveCfg = Release|x86
-		{AE76C734-EE73-45ED-85D9-E43BA51E2229}.Release|x86.Build.0 = Release|x86
+		{2A075BBD-935C-4838-872A-76EEBA3DA300}.Debug|x86.ActiveCfg = Debug|x86
+		{2A075BBD-935C-4838-872A-76EEBA3DA300}.Debug|x86.Build.0 = Debug|x86
+		{2A075BBD-935C-4838-872A-76EEBA3DA300}.Release|x86.ActiveCfg = Release|x86
+		{2A075BBD-935C-4838-872A-76EEBA3DA300}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
