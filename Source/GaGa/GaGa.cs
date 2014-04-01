@@ -95,7 +95,7 @@ namespace GaGa
             menu.Items.Clear();
 
             // on parsing errors, allow editing:
-            if (exception is StreamsMenuLoaderParsingError)
+            if (exception is StreamsFileError)
             {
                 errorParsingItem.Tag = exception;
                 menu.Items.Add(errorParsingItem);
@@ -154,7 +154,7 @@ namespace GaGa
         private void errorParsingItemClick(Object sender, EventArgs e)
         {
             ToolStripItem item = sender as ToolStripItem;
-            StreamsMenuLoaderParsingError exception = item.Tag as StreamsMenuLoaderParsingError;
+            StreamsFileError exception = item.Tag as StreamsFileError;
 
             // Example (without padding newlines):
             // streams.ini error at line 15

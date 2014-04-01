@@ -19,8 +19,12 @@ namespace GaGa
         /// Maintains an UTF8-encoded text file that is recreated
         /// from an embedded resource upon reading when it doesn't exist.
         /// </summary>
-        /// <param name="filepath">File path for the target file.</param>
-        /// <param name="resource">Path to the resource used to recreate it.</param>
+        /// <param name="filepath">
+        /// File path for the target file.
+        /// </param>
+        /// <param name="resource">
+        /// Path to the resource used to recreate it.
+        /// </param>
         public StreamsFile(String filepath, String resource)
         {
             this.FilePath = filepath;
