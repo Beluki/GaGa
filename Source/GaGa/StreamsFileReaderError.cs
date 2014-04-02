@@ -8,11 +8,11 @@ using System;
 
 namespace GaGa
 {
-    internal class StreamsFileError : Exception
+    internal class StreamsFileReaderError : Exception
     {
         public readonly String FilePath;
         public readonly String Line;
-        public readonly int LineNumber;
+        public readonly Int32 LineNumber;
 
         /// <summary>
         /// Raised by StreamsFileReader on a reading error.
@@ -20,8 +20,9 @@ namespace GaGa
         /// <param name="message">Error message.</param>
         /// <param name="filepath">File path for the incorrect file.</param>
         /// <param name="line">Line text for the incorrect line.</param>
-        /// <param name="linenumber">Line number where the error happened.</param>
-        public StreamsFileError(String message, String filepath, String line, int linenumber)
+        /// <param name="linenumber">Line where the error happened.</param>
+        public StreamsFileReaderError
+            (String message, String filepath, String line, Int32 linenumber)
             : base(message)
         {
             this.FilePath = filepath;

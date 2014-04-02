@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C2DBB2C1-A226-40C2-A461-5A862774E9A3}</ProjectGuid>
+    <ProjectGuid>{FC5D1B9A-B396-4BF4-96C2-9B4DC24D0AB8}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GaGa</RootNamespace>
@@ -47,17 +47,17 @@
     <Compile Include="mINI\mINI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="StreamsFile.cs" />
-    <Compile Include="StreamsFileError.cs" />
+    <Compile Include="StreamsFileReaderError.cs" />
     <Compile Include="StreamsFileReader.cs" />
     <Compile Include="StreamsMenuLoader.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\play.ico" />
-    <EmbeddedResource Include="Resources\stop.ico" />
+    <EmbeddedResource Include="Resources\default-streams.ini" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\default-streams.ini" />
+    <EmbeddedResource Include="Resources\play.ico" />
+    <EmbeddedResource Include="Resources\stop.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

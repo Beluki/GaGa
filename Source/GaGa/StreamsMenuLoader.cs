@@ -21,7 +21,7 @@ namespace GaGa
         /// <summary>
         /// Can read a StreamsFile as an INI, monitor changes,
         /// and add all the sections and items to a ContextMenuStrip
-        /// as submenues and menuitems.
+        /// as submenus and items.
         /// </summary>
         /// <param name="file">Streams file to read from.</param>
         public StreamsMenuLoader(StreamsFile file)

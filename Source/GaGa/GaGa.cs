@@ -95,7 +95,7 @@ namespace GaGa
             menu.Items.Clear();
 
             // on parsing errors, allow editing:
-            if (exception is StreamsFileError)
+            if (exception is StreamsFileReaderError)
             {
                 errorParsingItem.Tag = exception;
                 menu.Items.Add(errorParsingItem);
@@ -154,7 +154,7 @@ namespace GaGa
         private void errorParsingItemClick(Object sender, EventArgs e)
         {
             ToolStripItem item = sender as ToolStripItem;
-            StreamsFileError exception = item.Tag as StreamsFileError;
+            StreamsFileReaderError exception = item.Tag as StreamsFileReaderError;
 
             // Example (without padding newlines):
             // streams.ini error at line 15
@@ -186,7 +186,7 @@ namespace GaGa
             UpdateMenu();
             menu.ResumeLayout();
 
-            // position workaround, .NET tend to get confused on size changes:
+            // position workaround, .NET tends to get confused on size changes:
             menu.Show(cursorPosition.X - menu.Width, cursorPosition.Y - menu.Height);
         }
     }

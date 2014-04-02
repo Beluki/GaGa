@@ -25,7 +25,8 @@ namespace GaGa
         /// <param name="action">
         /// Action that determines the key value when not found.
         /// </param>
-        public static TValue GetOrSet<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key, Func<TValue> action)
+        public static TValue GetOrSet<TKey, TValue>
+            (this IDictionary<TKey, TValue> d, TKey key, Func<TValue> action)
         {
             if (d.ContainsKey(key))
                 return d[key];

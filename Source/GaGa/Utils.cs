@@ -46,7 +46,8 @@ namespace GaGa
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream stream = assembly.GetManifestResourceStream(resource))
             {
-                using (FileStream target = new FileStream(filepath, FileMode.Create, FileAccess.Write))
+                using (FileStream target = new FileStream(filepath, 
+                    FileMode.Create, FileAccess.Write))
                 {
                     stream.CopyTo(target);
                 }
