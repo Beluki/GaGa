@@ -69,7 +69,7 @@ namespace GaGa
         /// </summary>
         protected override void OnSubSectionEmpty(String path)
         {
-            ThrowReadingError("Empty submenu name.");
+            ThrowReadingError("Empty submenu name, at path: " + path);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// On a section, go back to the menu root.
+        /// On a new section, go back to the menu root.
         /// </summary>
         protected override void OnSection(String section)
         {
@@ -119,7 +119,7 @@ namespace GaGa
 
         /// <summary>
         /// Add key=value pairs as clickable menu items.
-        /// The value is stored in the item tag.
+        /// The value is stored in the item .Tag property.
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
@@ -131,7 +131,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Read all lines in our StreamsFile, adding menus
+        /// Read all lines in our StreamsFile, adding submenus
         /// and items to the ContextMenuStrip.
         /// </summary>
         public void Read()

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FC5D1B9A-B396-4BF4-96C2-9B4DC24D0AB8}</ProjectGuid>
+    <ProjectGuid>{74CFD61C-4864-4739-98A4-A65C731B0D07}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GaGa</RootNamespace>
@@ -47,11 +47,12 @@
     <Compile Include="mINI\mINI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="StreamsFile.cs" />
-    <Compile Include="StreamsFileReaderError.cs" />
     <Compile Include="StreamsFileReader.cs" />
+    <Compile Include="StreamsFileReaderError.cs" />
     <Compile Include="StreamsMenuLoader.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Resources\default-streams.ini" />
   </ItemGroup>

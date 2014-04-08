@@ -55,7 +55,7 @@ namespace mINI
         /// Called when a subsection name is empty.
         /// This method is called before calling OnSubSection.
         /// </summary>
-        /// <param name="path">Section path, including parents.</param>
+        /// <param name="path">Subsection path, including parents.</param>
         protected virtual void OnSubSectionEmpty(String path) {}
 
         /// <summary>
@@ -66,14 +66,14 @@ namespace mINI
         protected virtual void OnKeyValue(String key, String value) {}
 
         /// <summary>
-        /// Called when a key is empty in a key=value pair.
+        /// Called when the key is empty in a key=value pair.
         /// This method is called before calling OnKeyValue.
         /// </summary>
         /// <param name="value">Value associated with the key.</param>
         protected virtual void OnKeyEmpty(String value) {}
 
         /// <summary>
-        /// Called when a value is empty in a key=value pair.
+        /// Called when the value is empty in a key=value pair.
         /// This method is called before calling OnKeyValue.
         /// </summary>
         /// <param name="key">Key specified for the value.</param>
@@ -168,7 +168,7 @@ namespace mINI
             if (!line.Contains("="))
                 return false;
 
-            String[] pair = line.Split(new char[] { '=' }, 2);
+            String[] pair = line.Split(new Char[] { '=' }, 2);
             String key = pair[0].Trim();
             String value = pair[1].Trim();
 
@@ -190,10 +190,10 @@ namespace mINI
         {
             String trimmed_line = line.Trim();
 
-            if ((ReadEmpty(trimmed_line)
+            if (ReadEmpty(trimmed_line)
                || ReadComment(trimmed_line)
                || ReadSection(trimmed_line)
-               || ReadKeyValue(trimmed_line)))
+               || ReadKeyValue(trimmed_line))
                 return;
 
             // not trimmed:

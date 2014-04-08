@@ -19,14 +19,14 @@ namespace GaGa
 
         // gui components:
         private Container container;
-        private NotifyIcon icon;
         private ContextMenuStrip menu;
+        private NotifyIcon icon;
 
         // non-loader menu items:
         private ToolStripMenuItem editItem;
         private ToolStripMenuItem exitItem;
         private ToolStripMenuItem errorOpeningItem;
-        private ToolStripMenuItem errorParsingItem;
+        private ToolStripMenuItem errorReadingItem;
 
         // menu file and loader:
         private StreamsFile streamsFile;
@@ -44,23 +44,23 @@ namespace GaGa
             // gui components:
             container = new Container();
 
+            menu = new ContextMenuStrip();
+            menu.Opening += new CancelEventHandler(OnMenuOpening);
+
             icon = new NotifyIcon(container);
             icon.Icon = playIcon;
             icon.Text = "GaGa";
             icon.Visible = true;
-
-            menu = new ContextMenuStrip();
-            menu.Opening += new CancelEventHandler(menu_Opening);
             icon.ContextMenuStrip = menu;
 
             // non-loader menu items:
             editItem = new ToolStripMenuItem("Edit streams file");
             exitItem = new ToolStripMenuItem("Exit");
             errorOpeningItem = new ToolStripMenuItem("Unable to open streams file (click for details)");
-            errorParsingItem = new ToolStripMenuItem("Unable to parse streams file (click for details)");
+            errorReadingItem = new ToolStripMenuItem("Unable to read streams file (click for details)");
 
-            errorOpeningItem.Click += errorOpeningItemClick;
-            errorParsingItem.Click += errorParsingItemClick;
+            errorOpeningItem.Click += new EventHandler(OnErrorOpeningItemClick);
+            errorReadingItem.Click += new EventHandler(OnErrorReadingItemClick);
 
             // menu file and loader:
             streamsFile = new StreamsFile("streams.ini", "GaGa.Resources.default-streams.ini");
@@ -97,8 +97,8 @@ namespace GaGa
             // on parsing errors, allow editing:
             if (exception is StreamsFileReaderError)
             {
-                errorParsingItem.Tag = exception;
-                menu.Items.Add(errorParsingItem);
+                errorReadingItem.Tag = exception;
+                menu.Items.Add(errorReadingItem);
                 editItem.Enabled = true;
             }
             // otherwise it's an IO error, the file may not even exist:
@@ -132,13 +132,13 @@ namespace GaGa
 
         /// <summary>
         /// Fired when the user clicks on the error details
-        /// when the streams file can't be loaded.
+        /// when the streams file can't be opened.
         /// Shows a MessageBox with the error.
         /// </summary>
-        private void errorOpeningItemClick(Object sender, EventArgs e)
+        private void OnErrorOpeningItemClick(Object sender, EventArgs e)
         {
-            ToolStripItem item = sender as ToolStripItem;
-            Exception exception = item.Tag as Exception;
+            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+            Exception exception = (Exception) item.Tag;
 
             String caption = "Error opening streams file";
             String text = exception.Message;
@@ -148,17 +148,17 @@ namespace GaGa
 
         /// <summary>
         /// Fired when the user clicks on the error details
-        /// when the streams file can't be parsed.
-        /// Shows a MessageBox with the error and asks to edit the streams file.
+        /// when the streams file can't be read.
+        /// Shows a MessageBox with the error, suggests editing.
         /// </summary>
-        private void errorParsingItemClick(Object sender, EventArgs e)
+        private void OnErrorReadingItemClick(Object sender, EventArgs e)
         {
-            ToolStripItem item = sender as ToolStripItem;
-            StreamsFileReaderError exception = item.Tag as StreamsFileReaderError;
+            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+            StreamsFileReaderError exception = (StreamsFileReaderError) item.Tag;
 
             // Example (without padding newlines):
             // streams.ini error at line 15
-            // Invalid syntax
+            // Invalid syntax.
             // Line text
             // Do you want to edit the streams file now?
 
@@ -177,7 +177,7 @@ namespace GaGa
         /// <summary>
         /// Fired when the context menu is opening.
         /// </summary>
-        private void menu_Opening(Object sender, CancelEventArgs e)
+        private void OnMenuOpening(Object sender, CancelEventArgs e)
         {
             Point cursorPosition = Control.MousePosition;
 
@@ -186,7 +186,8 @@ namespace GaGa
             UpdateMenu();
             menu.ResumeLayout();
 
-            // position workaround, .NET tends to get confused on size changes:
+            // positioning workaround
+            // .NET tends to get confused on size changes:
             menu.Show(cursorPosition.X - menu.Width, cursorPosition.Y - menu.Height);
         }
     }
