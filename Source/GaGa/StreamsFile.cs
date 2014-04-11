@@ -16,8 +16,8 @@ namespace GaGa
         public readonly String Resource;
 
         /// <summary>
-        /// Maintains an UTF8-encoded text file that is recreated
-        /// from an embedded resource upon reading when it doesn't exist.
+        /// Maintains an UTF8-encoded text file that can be recreated
+        /// from an embedded resource when it doesn't exist.
         /// </summary>
         /// <param name="filepath">
         /// File path for the target file.
@@ -40,13 +40,19 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Recreate the file from the embedded resouce unless it exists.
+        /// </summary>
+        public void CreateUnlessExists()
+        {
+            if (!File.Exists(FilePath))
+                Utils.CopyResource(Resource, FilePath);
+        }
+
+        /// <summary>
         /// Iterate all lines from the file.
         /// </summary>
         public IEnumerable<String> ReadLineByLine()
         {
-            if (!File.Exists(FilePath))
-                Utils.CopyResource(Resource, FilePath);
-
             return Utils.ReadLineByLine(FilePath);
         }
     }

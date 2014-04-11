@@ -16,22 +16,22 @@ namespace GaGa
     {
         /// <summary>
         /// Try to get the value associated with the specified key.
-        /// When the key has no value, compute action, associate
+        /// When the key has no value, compute function, associate
         /// the key with the result and return the result.
         /// </summary>
         /// <param name="key">
         /// The key to lookup.
         /// </param>
-        /// <param name="action">
-        /// Action that determines the key value when not found.
+        /// <param name="function">
+        /// Function that determines the key value when not found.
         /// </param>
         public static TValue GetOrSet<TKey, TValue>
-            (this IDictionary<TKey, TValue> d, TKey key, Func<TValue> action)
+            (this IDictionary<TKey, TValue> d, TKey key, Func<TValue> function)
         {
             if (d.ContainsKey(key))
                 return d[key];
             else
-                return d[key] = action();
+                return d[key] = function();
         }
     }
 }

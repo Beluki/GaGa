@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{74CFD61C-4864-4739-98A4-A65C731B0D07}</ProjectGuid>
+    <ProjectGuid>{6BB178AA-E681-4CF1-A976-629420A5304E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GaGa</RootNamespace>
@@ -39,7 +39,6 @@
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
@@ -52,7 +51,6 @@
     <Compile Include="StreamsMenuLoader.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Resources\default-streams.ini" />
   </ItemGroup>

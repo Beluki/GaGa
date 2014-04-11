@@ -72,46 +72,56 @@ namespace GaGa
         /// </summary>
         private void ReloadContextMenuOnChanges()
         {
-            if (menuLoader.HasChanged())
+            if (menuLoader.MustReload())
             {
                 menu.Items.Clear();
                 menuLoader.LoadTo(menu);
                 menu.Items.Add(new ToolStripSeparator());
                 menu.Items.Add(editItem);
                 menu.Items.Add(exitItem);
+
                 editItem.Enabled = true;
             }
         }
 
         /// <summary>
-        /// Create a context menu containing a clickable error item.
-        /// The item contains the raised exception in the Tag property.
+        /// Create a context menu containing a clickable error item
+        /// on opening errors. The item contains the raised exception
+        /// in the .Tag property.
         /// </summary>
         /// <param name="exception">
-        /// Error that happened when trying to load the menu.
+        /// Error that happened when trying to open the streams file.
         /// </param>
-        private void LoadErrorContextMenu(Exception exception)
+        private void LoadOpeningErrorContextMenu(Exception exception)
         {
             menu.Items.Clear();
-
-            // on parsing errors, allow editing:
-            if (exception is StreamsFileReaderError)
-            {
-                errorReadingItem.Tag = exception;
-                menu.Items.Add(errorReadingItem);
-                editItem.Enabled = true;
-            }
-            // otherwise it's an IO error, the file may not even exist:
-            else
-            {
-                errorOpeningItem.Tag = exception;
-                menu.Items.Add(errorOpeningItem);
-                editItem.Enabled = false;
-            }
-
+            menu.Items.Add(errorOpeningItem);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(editItem);
             menu.Items.Add(exitItem);
+
+            errorOpeningItem.Tag = exception;
+            editItem.Enabled = false;
+        }
+
+        /// <summary>
+        /// Create a context menu containing a clickable error item
+        /// on reading errors. The item contains the raised exception
+        /// in the .Tag property.
+        /// </summary>
+        /// <param name="exception">
+        /// Error that happened when trying to read the streams file.
+        /// </param>
+        private void LoadReadingErrorContextMenu(StreamsFileReaderError exception)
+        {
+            menu.Items.Clear();
+            menu.Items.Add(errorReadingItem);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(editItem);
+            menu.Items.Add(exitItem);
+
+            errorReadingItem.Tag = exception;
+            editItem.Enabled = true;
         }
 
         /// <summary>
@@ -124,9 +134,15 @@ namespace GaGa
             {
                 ReloadContextMenuOnChanges();
             }
+
+            catch (StreamsFileReaderError exception)
+            {
+                LoadReadingErrorContextMenu(exception);
+            }
+
             catch (Exception exception)
             {
-                LoadErrorContextMenu(exception);
+                LoadOpeningErrorContextMenu(exception);
             }
         }
 
@@ -156,14 +172,10 @@ namespace GaGa
             ToolStripMenuItem item = (ToolStripMenuItem) sender;
             StreamsFileReaderError exception = (StreamsFileReaderError) item.Tag;
 
-            // Example (without padding newlines):
-            // streams.ini error at line 15
-            // Invalid syntax.
-            // Line text
-            // Do you want to edit the streams file now?
-
             String text = String.Format(
-                "{0} error at line {1} \n{2} \n\n{3}\n\n" +
+                "{0} error at line {1} \n" +
+                "{2} \n\n" +
+                "{3} \n\n" +
                 "Do you want to edit the streams file now?",
                 exception.FilePath,
                 exception.LineNumber,

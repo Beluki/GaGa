@@ -16,7 +16,7 @@ namespace GaGa
     internal class StreamsMenuLoader
     {
         private StreamsFile file;
-        private DateTime lastUpdated;
+        private Nullable<DateTime> lastUpdated;
 
         /// <summary>
         /// Can read a StreamsFile as an INI, monitor changes,
@@ -27,13 +27,15 @@ namespace GaGa
         public StreamsMenuLoader(StreamsFile file)
         {
             this.file = file;
-            this.lastUpdated = DateTime.MinValue;
+            this.lastUpdated = null;
         }
 
         /// <summary>
-        /// Determines whether the streams file has changed since last read.
+        /// Determine whether we need to reload our StreamsFile.
+        /// Returns true when the file does not exist or when it
+        /// changed since the last read.
         /// </summary>
-        public Boolean HasChanged()
+        public Boolean MustReload()
         {
             return lastUpdated != file.GetLastWriteTime();
         }
@@ -45,9 +47,17 @@ namespace GaGa
         /// <param name="menu">Target ContextMenuStrip.</param>
         public void LoadTo(ContextMenuStrip menu)
         {
+            file.CreateUnlessExists();
+
+            // loading is instant for all practical purposes
+            // but grab the current write time before proceeding:
+            DateTime lastWriteTime = file.GetLastWriteTime();
+
             StreamsFileReader reader = new StreamsFileReader(file, menu);
             reader.Read();
-            lastUpdated = file.GetLastWriteTime();
+
+            // the file exists and reading ok, update time:
+            lastUpdated = lastWriteTime;
         }
     }
 }
