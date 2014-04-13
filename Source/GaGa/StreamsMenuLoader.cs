@@ -5,10 +5,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Windows.Forms;
-
-using mINI;
 
 
 namespace GaGa
@@ -31,9 +29,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Determine whether we need to reload our StreamsFile.
-        /// Returns true when the file does not exist or when it
-        /// changed since the last read.
+        /// Determine whether we need to reload our streams file.
         /// </summary>
         public Boolean MustReload()
         {
@@ -41,23 +37,34 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Read the StreamsFile again, adding submenus and items
-        /// to the given ContextMenuStrip.
+        /// Read the streams file again, adding submenus and items
+        /// to the given ContextMenu.
         /// </summary>
-        /// <param name="menu">Target ContextMenuStrip.</param>
-        public void LoadTo(ContextMenuStrip menu)
+        /// <param name="menu">Target context menu.</param>
+        public void LoadTo(ContextMenu menu)
         {
             file.CreateUnlessExists();
 
-            // loading is instant for all practical purposes
-            // but grab the current write time before proceeding:
+            // the file could have been deleted right after creation:
             DateTime lastWriteTime = file.GetLastWriteTime();
 
-            StreamsFileReader reader = new StreamsFileReader(file, menu);
-            reader.Read();
+            if (lastWriteTime.ToFileTimeUtc() == Utils.fileNotFoundUtc)
+                throw new IOException("Unable to create streams file.");
 
-            // the file exists and reading ok, update time:
-            lastUpdated = lastWriteTime;
+            try
+            {
+                StreamsFileReader reader = new StreamsFileReader(menu);
+                reader.ReadLines(file.ReadLineByLine());
+                lastUpdated = lastWriteTime;
+            }
+
+            // update our time on StreamFileReadErrors too
+            // because the file will still be wrong until it changes:
+            catch (StreamsFileReadError)
+            {
+                lastUpdated = lastWriteTime;
+                throw;
+            }
         }
     }
 }

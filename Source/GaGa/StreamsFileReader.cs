@@ -14,43 +14,37 @@ namespace GaGa
 {
     internal class StreamsFileReader : INIReader
     {
-        private StreamsFile file;
-        private ContextMenuStrip menu;
-
-        private ToolStripItemCollection currentSubmenu;
-        private Dictionary<String, ToolStripMenuItem> seenSubmenues;
+        private ContextMenu menu;
+        private Menu.MenuItemCollection currentMenuItems;
+        private Dictionary<String, MenuItem> seenSubmenues;
 
         private Int32 currentLineNumber;
         private String currentLine;
 
         /// <summary>
-        /// An INI reader that adds submenus and items to a ContextMenuStrip
-        /// from a given StreamsFile.
+        /// An INI reader that adds sections and key=value pairs to
+        /// a ContextMenu as submenus and clickable items.
         /// </summary>
-        /// <param name="file">StreamsFile to read.</param>
-        /// <param name="menu">Context menu to add items to.</param>
-        public StreamsFileReader(StreamsFile file, ContextMenuStrip menu)
+        /// <param name="menu">Target context menu.</param>
+        public StreamsFileReader(ContextMenu menu)
         {
-            this.file = file;
             this.menu = menu;
-
-            this.currentSubmenu = menu.Items;
-            this.seenSubmenues = new Dictionary<String, ToolStripMenuItem>();
+            this.currentMenuItems = menu.MenuItems;
+            this.seenSubmenues = new Dictionary<String, MenuItem>();
 
             this.currentLineNumber = 0;
             this.currentLine = String.Empty;
         }
 
         /// <summary>
-        /// Concise helper to throw StreamsFileReaderError
+        /// Concise helper to throw StreamsFileReadError
         /// exceptions during reading.
         /// </summary>
         /// <param name="message">Error message.</param>
-        private void ThrowReadingError(String message)
+        private void ThrowReadError(String message)
         {
-            throw new StreamsFileReaderError(
+            throw new StreamsFileReadError(
                 message,
-                file.FilePath,
                 currentLine,
                 currentLineNumber
             );
@@ -61,7 +55,7 @@ namespace GaGa
         /// </summary>
         protected override void OnSectionEmpty()
         {
-            ThrowReadingError("Empty menu name.");
+            ThrowReadError("Empty menu name.");
         }
 
         /// <summary>
@@ -69,7 +63,7 @@ namespace GaGa
         /// </summary>
         protected override void OnSubSectionEmpty(String path)
         {
-            ThrowReadingError("Empty submenu name, at path: " + path);
+            ThrowReadError("Empty submenu name, at path: " + path);
         }
 
         /// <summary>
@@ -77,7 +71,7 @@ namespace GaGa
         /// </summary>
         protected override void OnKeyEmpty(String value)
         {
-            ThrowReadingError("Empty stream name.");
+            ThrowReadError("Empty stream name.");
         }
 
         /// <summary>
@@ -85,7 +79,7 @@ namespace GaGa
         /// </summary>
         protected override void OnUnknown(String line)
         {
-            ThrowReadingError("Invalid syntax.");
+            ThrowReadError("Invalid syntax.");
         }
 
         /// <summary>
@@ -93,7 +87,7 @@ namespace GaGa
         /// </summary>
         protected override void OnEmpty()
         {
-            currentSubmenu = menu.Items;
+            currentMenuItems = menu.MenuItems;
         }
 
         /// <summary>
@@ -101,20 +95,27 @@ namespace GaGa
         /// </summary>
         protected override void OnSection(String section)
         {
-            currentSubmenu = menu.Items;
+            currentMenuItems = menu.MenuItems;
         }
 
         /// <summary>
-        /// Add subsections as submenus and descent into them.
+        /// Add subsections as submenus and descend into them.
         /// </summary>
         protected override void OnSubSection(String subsection, String path)
         {
-            ToolStripMenuItem submenu = seenSubmenues.GetOrSet(
-                path, () => new ToolStripMenuItem(subsection)
-            );
+            MenuItem submenu;
+            seenSubmenues.TryGetValue(path, out submenu);
 
-            currentSubmenu.Add(submenu);
-            currentSubmenu = submenu.DropDownItems;
+            // not seen, create and add to the current menu
+            // (otherwise it's a duplicate and has already been added)
+            if (submenu == null)
+            {
+                submenu = new MenuItem(subsection);
+                seenSubmenues.Add(path, submenu);
+                currentMenuItems.Add(submenu);
+            }
+
+            currentMenuItems = submenu.MenuItems;
         }
 
         /// <summary>
@@ -123,20 +124,18 @@ namespace GaGa
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
-            ToolStripItem item = new ToolStripMenuItem(key);
+            MenuItem item = new MenuItem(key);
             item.Tag = value;
-            item.ToolTipText = value;
 
-            currentSubmenu.Add(item);
+            currentMenuItems.Add(item);
         }
 
         /// <summary>
-        /// Read all lines in our StreamsFile, adding submenus
-        /// and items to the ContextMenuStrip.
+        /// Read lines adding submenus and items to the context menu.
         /// </summary>
-        public void Read()
+        public void ReadLines(IEnumerable<String> lines)
         {
-            foreach (String line in file.ReadLineByLine())
+            foreach (String line in lines)
             {
                 currentLineNumber++;
                 currentLine = line;

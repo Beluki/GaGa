@@ -17,13 +17,13 @@ namespace GaGa
 
         /// <summary>
         /// Maintains an UTF8-encoded text file that can be recreated
-        /// from an embedded resource when it doesn't exist.
+        /// from an embedded resource.
         /// </summary>
         /// <param name="filepath">
         /// File path for the target file.
         /// </param>
         /// <param name="resource">
-        /// Path to the resource used to recreate it.
+        /// Path to the resource used to recreate it, including namespace.
         /// </param>
         public StreamsFile(String filepath, String resource)
         {

@@ -17,7 +17,7 @@ namespace GaGa
         [STAThread]
         private static void Main()
         {
-            Application.Run(new GaGa());
+            Application.Run();
         }
     }
 }
