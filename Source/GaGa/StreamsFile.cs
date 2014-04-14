@@ -40,7 +40,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Recreate the file from the embedded resouce unless it exists.
+        /// Recreate the file from the embedded resource unless it exists.
         /// </summary>
         public void CreateUnlessExists()
         {

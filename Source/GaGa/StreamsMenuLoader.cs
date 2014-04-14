@@ -18,7 +18,7 @@ namespace GaGa
 
         /// <summary>
         /// Can read a StreamsFile as an INI, monitor changes,
-        /// and add all the sections and items to a ContextMenuStrip
+        /// and add all the sections and items to a ContextMenu
         /// as submenus and clickable items.
         /// </summary>
         /// <param name="file">Streams file to read from.</param>
@@ -30,6 +30,10 @@ namespace GaGa
 
         /// <summary>
         /// Determine whether we need to reload our streams file.
+        ///
+        /// Returns true when the file does not exist (so LoadTo can
+        /// recreate it on the next call) or when it changed since
+        /// the last update.
         /// </summary>
         public Boolean MustReload()
         {
@@ -44,12 +48,19 @@ namespace GaGa
         public void LoadTo(ContextMenu menu)
         {
             file.CreateUnlessExists();
-
-            // the file could have been deleted right after creation:
             DateTime lastWriteTime = file.GetLastWriteTime();
 
+            // Corner case:
+            //
+            // We made an attempt to recreate the file when needed
+            // but it could be deleted right before calling GetLastWriteTime().
+            //
+            // In this case, raise an exception now, don't touch lastUpdated.
+            // lastUpdated should only contain *valid* dates or null, so that
+            // when the file doesn't exist, MustReload() returns true.
+
             if (lastWriteTime.ToFileTimeUtc() == Utils.fileNotFoundUtc)
-                throw new IOException("Unable to create streams file.");
+                throw new IOException("Streams file deleted during load.");
 
             try
             {

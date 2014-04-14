@@ -107,7 +107,7 @@ namespace GaGa
             seenSubmenues.TryGetValue(path, out submenu);
 
             // not seen, create and add to the current menu
-            // (otherwise it's a duplicate and has already been added)
+            // otherwise it's a duplicate and has already been added
             if (submenu == null)
             {
                 submenu = new MenuItem(subsection);
