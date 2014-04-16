@@ -14,7 +14,9 @@ namespace GaGa
 {
     internal class StreamsFileReader : INIReader
     {
+        private StreamsFile file;
         private ContextMenu menu;
+
         private Menu.MenuItemCollection currentMenuItems;
         private Dictionary<String, MenuItem> seenSubmenues;
 
@@ -22,15 +24,32 @@ namespace GaGa
         private String currentLine;
 
         /// <summary>
-        /// An INI reader that adds sections and key=value pairs to
-        /// a ContextMenu as submenus and clickable items.
+        /// An INI reader that reads lines from a streams file
+        /// adding sections and key=value pairs to a ContextMenu
+        /// as submenus and clickable items.
         /// </summary>
-        /// <param name="menu">Target context menu.</param>
-        public StreamsFileReader(ContextMenu menu)
+        public StreamsFileReader()
         {
-            this.menu = menu;
-            this.currentMenuItems = menu.MenuItems;
+            this.file = null;
+            this.menu = null;
+
+            this.currentMenuItems = null;
             this.seenSubmenues = new Dictionary<String, MenuItem>();
+
+            this.currentLineNumber = 0;
+            this.currentLine = String.Empty;
+        }
+
+        /// <summary>
+        /// Clear internal state.
+        /// </summary>
+        private void ResetState()
+        {
+            this.file = null;
+            this.menu = null;
+
+            this.currentMenuItems = null;
+            this.seenSubmenues.Clear();
 
             this.currentLineNumber = 0;
             this.currentLine = String.Empty;
@@ -45,6 +64,7 @@ namespace GaGa
         {
             throw new StreamsFileReadError(
                 message,
+                file,
                 currentLine,
                 currentLineNumber
             );
@@ -131,15 +151,31 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Read lines adding submenus and items to the context menu.
+        /// Read lines from a streams file adding submenus and items
+        /// to a context menu.
+        /// <param name="file">Streams file to read lines from.</param>
+        /// <param name="menu">Target context menu.</param>
         /// </summary>
-        public void ReadLines(IEnumerable<String> lines)
+        public void Read(StreamsFile file, ContextMenu menu)
         {
-            foreach (String line in lines)
+            this.file = file;
+            this.menu = menu;
+
+            // start at root:
+            this.currentMenuItems = menu.MenuItems;
+
+            try
             {
-                currentLineNumber++;
-                currentLine = line;
-                ReadLine(line);
+                foreach (String line in file.ReadLineByLine())
+                {
+                    currentLineNumber++;
+                    currentLine = line;
+                    ReadLine(line);
+                }
+            }
+            finally
+            {
+                this.ResetState();
             }
         }
     }

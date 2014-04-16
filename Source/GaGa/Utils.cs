@@ -26,7 +26,7 @@ namespace GaGa
         /// this method returns 12:00 midnight, January 1, 1601 A.D. (C.E.)
         /// Coordinated Universal Time (UTC), adjusted to local time.
         /// </summary>
-        public static readonly long fileNotFoundUtc = new DateTime(1601, 1, 1).ToFileTimeUtc();
+        public static readonly Int64 fileNotFoundUtc = new DateTime(1601, 1, 1).ToFileTimeUtc();
 
         /// <summary>
         /// Load an Icon from an embedded resource.

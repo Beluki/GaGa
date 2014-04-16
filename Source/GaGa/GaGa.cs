@@ -5,7 +5,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -44,15 +43,15 @@ namespace GaGa
 
             // gui components:
             container = new Container();
-            
+
             menu = new ContextMenu();
             menu.Popup += new EventHandler(OnMenuPopup);
 
             icon = new NotifyIcon(container);
-            icon.ContextMenu = menu;
             icon.Icon = playIcon;
             icon.Text = "GaGa";
             icon.Visible = true;
+            icon.ContextMenu = menu;
 
             // non-loader menu items:
             editItem = new MenuItem("Edit streams file");
@@ -85,18 +84,17 @@ namespace GaGa
         /// <summary>
         /// Re-create the context menu on changes from the menuloader.
         /// </summary>
-        private void ReloadContextMenuOnChanges()
+        private void LoadContextMenu()
         {
             if (menuLoader.MustReload())
             {
-                RecreateMenu();         
-      
+                RecreateMenu();
                 menuLoader.LoadTo(menu);
                 menu.MenuItems.Add("-");
                 menu.MenuItems.Add(editItem);
                 menu.MenuItems.Add(exitItem);
 
-                editItem.Enabled = true;           
+                editItem.Enabled = true;
             }
         }
 
@@ -108,10 +106,9 @@ namespace GaGa
         /// <param name="exception">
         /// Error that happened when trying to open the streams file.
         /// </param>
-        private void LoadOpenErrorContextMenu(Exception exception)
+        private void LoadErrorOpenContextMenu(Exception exception)
         {
             RecreateMenu();
-
             menu.MenuItems.Add(errorOpenItem);
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(editItem);
@@ -129,10 +126,9 @@ namespace GaGa
         /// <param name="exception">
         /// Error that happened when trying to read the streams file.
         /// </param>
-        private void LoadReadErrorContextMenu(StreamsFileReadError exception)
+        private void LoadErrorReadContextMenu(StreamsFileReadError exception)
         {
             RecreateMenu();
-
             menu.MenuItems.Add(errorReadItem);
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(editItem);
@@ -150,32 +146,16 @@ namespace GaGa
         {
             try
             {
-                ReloadContextMenuOnChanges();
+                LoadContextMenu();
             }
             catch (StreamsFileReadError exception)
             {
-                LoadReadErrorContextMenu(exception);
+                LoadErrorReadContextMenu(exception);
             }
             catch (Exception exception)
             {
-                LoadOpenErrorContextMenu(exception);
+                LoadErrorOpenContextMenu(exception);
             }
-        }
-
-        /// <summary>
-        /// Fired when the user clicks on the edit streams item.
-        /// </summary>
-        private void OnEditItemClick(Object sender, EventArgs e)
-        {
-
-        }
-
-        /// <summary>
-        /// Fired when the user clicks on the exit program item.
-        /// </summary>
-        private void OnExitItemClick(Object sender, EventArgs e)
-        {
-
         }
 
         /// <summary>
@@ -205,16 +185,34 @@ namespace GaGa
             StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
 
             String text = String.Format(
-                "Streams file error at line {0} \n" +
-                "{1} \n\n" +
+                "{0} error at line {1} \n" +
                 "{2} \n\n" +
+                "{3} \n\n" +
                 "Do you want to edit the streams file now?",
+                exception.File.FilePath,
                 exception.LineNumber,
                 exception.Message,
                 exception.Line);
 
             String caption = "Error reading streams file";
             DialogResult result = MessageBox.Show(text, caption, MessageBoxButtons.YesNo);
+        }
+
+        /// <summary>
+        /// Fired when the user clicks on the edit streams item.
+        /// </summary>
+        private void OnEditItemClick(Object sender, EventArgs e)
+        {
+
+        }
+
+        /// <summary>
+        /// Fired when the user clicks on the exit program item.
+        /// </summary>
+        private void OnExitItemClick(Object sender, EventArgs e)
+        {
+            icon.Visible = false;
+            Application.Exit();
         }
 
         /// <summary>

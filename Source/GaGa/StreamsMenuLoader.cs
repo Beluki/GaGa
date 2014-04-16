@@ -13,7 +13,8 @@ namespace GaGa
 {
     internal class StreamsMenuLoader
     {
-        private StreamsFile file;
+        private readonly StreamsFile file;
+        private readonly StreamsFileReader reader;
         private Nullable<DateTime> lastUpdated;
 
         /// <summary>
@@ -25,15 +26,16 @@ namespace GaGa
         public StreamsMenuLoader(StreamsFile file)
         {
             this.file = file;
+            this.reader = new StreamsFileReader();
             this.lastUpdated = null;
         }
 
         /// <summary>
         /// Determine whether we need to reload our streams file.
         ///
-        /// Returns true when the file does not exist (so LoadTo can
-        /// recreate it on the next call) or when it changed since
-        /// the last update.
+        /// Returns true when the file does not exist
+        /// (so LoadTo can recreate it on the next call)
+        /// or when it changed since the last update.
         /// </summary>
         public Boolean MustReload()
         {
@@ -64,8 +66,7 @@ namespace GaGa
 
             try
             {
-                StreamsFileReader reader = new StreamsFileReader(menu);
-                reader.ReadLines(file.ReadLineByLine());
+                reader.Read(file, menu);
                 lastUpdated = lastWriteTime;
             }
 
