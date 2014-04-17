@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 
 
 namespace GaGa
@@ -79,6 +80,15 @@ namespace GaGa
                     yield return line;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the directory path where the executable that started the
+        /// application can be found.
+        /// </summary>
+        public static String ApplicationDirectory()
+        {
+            return Path.GetDirectoryName(Application.ExecutablePath);
         }
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 
@@ -54,6 +55,14 @@ namespace GaGa
         public IEnumerable<String> ReadLineByLine()
         {
             return Utils.ReadLineByLine(FilePath);
+        }
+
+        /// <summary>
+        /// Execute the file as a process.
+        /// </summary>
+        public void Run()
+        {
+            Process.Start(FilePath);
         }
     }
 }

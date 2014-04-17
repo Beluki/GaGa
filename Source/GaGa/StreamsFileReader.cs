@@ -162,7 +162,7 @@ namespace GaGa
             this.menu = menu;
 
             // start at root:
-            this.currentMenuItems = menu.MenuItems;
+            currentMenuItems = menu.MenuItems;
 
             try
             {
@@ -175,7 +175,7 @@ namespace GaGa
             }
             finally
             {
-                this.ResetState();
+                ResetState();
             }
         }
     }
