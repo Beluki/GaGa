@@ -54,7 +54,7 @@ namespace GaGa
             icon.Text = "GaGa";
             icon.Visible = true;
 
-            RecreateMenu();
+            MenuRecreate();
 
             // non-loader menu items:
             editItem = new MenuItem("Edit streams file");
@@ -71,7 +71,7 @@ namespace GaGa
             streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
             streamsResourcePath = "GaGa.Resources.default-streams.ini";
 
-            // menu file and loader:           
+            // menu file and loader:
             streamsFile = new StreamsFile(streamsFilePath, streamsResourcePath);
             menuLoader = new StreamsMenuLoader(streamsFile);
         }
@@ -81,7 +81,7 @@ namespace GaGa
         /// Unlike menu.MenuItems.Clear() this avoids the problem of menus
         /// caching their width.
         /// </summary>
-        private void RecreateMenu()
+        private void MenuRecreate()
         {
             menu = new ContextMenu();
             menu.Popup += new EventHandler(OnMenuPopup);
@@ -91,11 +91,11 @@ namespace GaGa
         /// <summary>
         /// Re-create the context menu on changes from the menuloader.
         /// </summary>
-        private void LoadContextMenu()
+        private void MenuMaybeReload()
         {
             if (menuLoader.MustReload())
             {
-                RecreateMenu();
+                MenuRecreate();
                 menuLoader.LoadTo(menu);
                 menu.MenuItems.Add("-");
                 menu.MenuItems.Add(editItem);
@@ -113,9 +113,9 @@ namespace GaGa
         /// <param name="exception">
         /// Error that happened when trying to open the streams file.
         /// </param>
-        private void LoadErrorOpenContextMenu(Exception exception)
+        private void MenuLoadErrorOpen(Exception exception)
         {
-            RecreateMenu();
+            MenuRecreate();
             menu.MenuItems.Add(errorOpenItem);
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(editItem);
@@ -133,9 +133,9 @@ namespace GaGa
         /// <param name="exception">
         /// Error that happened when trying to read the streams file.
         /// </param>
-        private void LoadErrorReadContextMenu(StreamsFileReadError exception)
+        private void MenuLoadErrorRead(StreamsFileReadError exception)
         {
-            RecreateMenu();
+            MenuRecreate();
             menu.MenuItems.Add(errorReadItem);
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(editItem);
@@ -149,19 +149,19 @@ namespace GaGa
         /// Recreate the context menu when needed.
         /// Create an alternative menu on read and open errors.
         /// </summary>
-        private void UpdateMenu()
+        private void MenuUpdate()
         {
             try
             {
-                LoadContextMenu();
+                MenuMaybeReload();
             }
             catch (StreamsFileReadError exception)
             {
-                LoadErrorReadContextMenu(exception);
+                MenuLoadErrorRead(exception);
             }
             catch (Exception exception)
             {
-                LoadErrorOpenContextMenu(exception);
+                MenuLoadErrorOpen(exception);
             }
         }
 
@@ -169,11 +169,11 @@ namespace GaGa
         /// Edit the streams file with the default program
         /// associated to the INI extension.
         /// </summary>
-        private void EditStreamsFile()
+        private void StreamsFileEdit()
         {
             try
             {
-                streamsFile.Run();                
+                streamsFile.Run();
             }
             catch (Exception exception)
             {
@@ -190,12 +190,11 @@ namespace GaGa
         /// </summary>
         private void OnErrorOpenItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem) sender;
-            Exception exception = (Exception) item.Tag;
+            MenuItem item = (MenuItem)sender;
+            Exception exception = (Exception)item.Tag;
 
             String text = exception.Message;
             String caption = "Error opening streams file";
-
             MessageBox.Show(text, caption);
         }
 
@@ -206,8 +205,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorReadItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem) sender;
-            StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
+            MenuItem item = (MenuItem)sender;
+            StreamsFileReadError exception = (StreamsFileReadError)item.Tag;
 
             String text = String.Format(
                 "{0} \n" +
@@ -221,11 +220,8 @@ namespace GaGa
                 exception.Line);
 
             String caption = "Error reading streams file";
-
-            DialogResult result;
-            result = MessageBox.Show(text, caption, MessageBoxButtons.YesNo);
-            if (result == DialogResult.Yes)
-                EditStreamsFile();
+            if (Utils.MessageBoxYesNo(text, caption))
+                StreamsFileEdit();
         }
 
         /// <summary>
@@ -233,7 +229,7 @@ namespace GaGa
         /// </summary>
         private void OnEditItemClick(Object sender, EventArgs e)
         {
-            EditStreamsFile();
+            StreamsFileEdit();
         }
 
         /// <summary>
@@ -250,7 +246,7 @@ namespace GaGa
         /// </summary>
         private void OnMenuPopup(Object sender, EventArgs e)
         {
-            UpdateMenu();
+            MenuUpdate();
         }
     }
 }

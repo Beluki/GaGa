@@ -90,6 +90,19 @@ namespace GaGa
         {
             return Path.GetDirectoryName(Application.ExecutablePath);
         }
+
+        /// <summary>
+        /// Show a MessageBox with Yes and No buttons. Return a Boolean
+        /// determining whether Yes (true) No (false) was clicked.
+        /// </summary>
+        /// <param name="text">MessageBox text.</param>
+        /// <param name="caption">MessageBox caption.</param>
+        /// <returns></returns>
+        public static Boolean MessageBoxYesNo(String text, String caption)
+        {
+            DialogResult result = MessageBox.Show(text, caption, MessageBoxButtons.YesNo);
+            return result == DialogResult.Yes;
+        }
     }
 }
 
