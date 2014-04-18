@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Media;
 
 
 namespace GaGa
@@ -31,11 +32,16 @@ namespace GaGa
 
         // paths:
         private String streamsFilePath;
-        private String streamsResourcePath;
+        private String streamsFileResourcePath;
 
         // menu file and loader:
         private StreamsFile streamsFile;
         private StreamsMenuLoader menuLoader;
+
+        // player state:
+        private MediaPlayer player;
+        private RadioStream playerStream;
+        private Boolean playerIsPlaying;
 
         /// <summary>
         /// Actual implementation.
@@ -51,9 +57,10 @@ namespace GaGa
 
             icon = new NotifyIcon(container);
             icon.Icon = playIcon;
-            icon.Text = "GaGa";
             icon.Visible = true;
+            icon.MouseClick += new MouseEventHandler(OnIconMouseClick);
 
+            IconSetNoStream();
             MenuRecreate();
 
             // non-loader menu items:
@@ -69,12 +76,21 @@ namespace GaGa
 
             // paths:
             streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
-            streamsResourcePath = "GaGa.Resources.default-streams.ini";
+            streamsFileResourcePath = "GaGa.Resources.default-streams.ini";
 
             // menu file and loader:
-            streamsFile = new StreamsFile(streamsFilePath, streamsResourcePath);
+            streamsFile = new StreamsFile(streamsFilePath, streamsFileResourcePath);
             menuLoader = new StreamsMenuLoader(streamsFile);
+
+            // player state:
+            player = new MediaPlayer();
+            playerStream = null;
+            playerIsPlaying = false;
         }
+
+        ///
+        /// Menu loading.
+        /// 
 
         /// <summary>
         /// Clear the menu by deleting it and creating a new one from scratch.
@@ -96,7 +112,7 @@ namespace GaGa
             if (menuLoader.MustReload())
             {
                 MenuRecreate();
-                menuLoader.LoadTo(menu);
+                menuLoader.LoadTo(menu, OnStreamItemClick);
                 menu.MenuItems.Add("-");
                 menu.MenuItems.Add(editItem);
                 menu.MenuItems.Add(exitItem);
@@ -165,6 +181,10 @@ namespace GaGa
             }
         }
 
+        ///
+        /// Streams file.
+        /// 
+
         /// <summary>
         /// Edit the streams file with the default program
         /// associated to the INI extension.
@@ -183,6 +203,101 @@ namespace GaGa
             }
         }
 
+        ///
+        /// Icon switching.
+        /// 
+
+        /// <summary>
+        /// Change the icon to no stream selected yet.
+        /// </summary>
+        private void IconSetNoStream()
+        {
+            icon.Icon = playIcon;
+            icon.Text = "No stream selected\n"
+                      + "Click to open the menu";
+        }
+
+        /// <summary>
+        /// Change the icon state to playing.
+        /// </summary>
+        private void IconSetPlay()
+        {
+            icon.Icon = stopIcon;
+            icon.Text = "Playing\n"
+                      + "Left click: stop\n"
+                      + "Right click: menu";
+        }
+
+        /// <summary>
+        /// Change the icon state to stopped.
+        /// </summary>
+        private void IconSetStop()
+        {
+            icon.Icon = playIcon;
+            icon.Text = "Stopped\n"
+                      + "Left click: play\n"
+                      + "Right click: menu";
+        }
+
+        ///
+        /// Player.
+        /// Those methods expect playerStream to be set.
+        ///
+
+        /// <summary>
+        /// Open and play the currently selected stream.
+        /// </summary>
+        private void PlayerPlay()
+        {
+            try
+            {
+                Uri uri = playerStream.GetUri();
+                player.Open(uri);
+                player.Play();
+
+                playerIsPlaying = true;
+                IconSetPlay();
+            }
+
+            catch (UriFormatException exception)
+            {
+                PlayerStop();
+
+                String name = playerStream.Name;
+                String link = playerStream.Link;
+
+                String title = "Unable to open stream: " + name;
+                String text = link + "\n\n" + exception.Message;
+
+                icon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Stop playing.
+        /// </summary>
+        private void PlayerStop()
+        {
+            player.Stop();
+            player.Close();
+            playerIsPlaying = false;
+            IconSetStop();
+        }
+
+        ///
+        /// Click events.
+        /// 
+
+        /// <summary>
+        /// Fired when the user clicks on a stream item in the menu.
+        /// Change selected stream to the new one and play it.
+        /// </summary>
+        private void OnStreamItemClick(Object sender, EventArgs e)
+        {
+            playerStream = (RadioStream) ((MenuItem) sender).Tag;
+            PlayerPlay();
+        }
+
         /// <summary>
         /// Fired when the user clicks on the error details item
         /// when the streams file can't be opened.
@@ -190,8 +305,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorOpenItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
-            Exception exception = (Exception)item.Tag;
+            MenuItem item = (MenuItem) sender;
+            Exception exception = (Exception) item.Tag;
 
             String text = exception.Message;
             String caption = "Error opening streams file";
@@ -205,8 +320,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorReadItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
-            StreamsFileReadError exception = (StreamsFileReadError)item.Tag;
+            MenuItem item = (MenuItem) sender;
+            StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
 
             String text = String.Format(
                 "{0} \n" +
@@ -240,6 +355,37 @@ namespace GaGa
             icon.Visible = false;
             Application.Exit();
         }
+
+        /// <summary>
+        /// Fired when the user clicks on the icon.
+        /// </summary>
+        private void OnIconMouseClick(Object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (playerIsPlaying)
+                {
+                    PlayerStop();
+                }
+                else
+                {
+                    // no stream yet, invoke context menu instead
+                    // so that the user can choose one:
+                    if (playerStream == null)
+                    {
+                        icon.InvokeContextMenu();
+                    }
+                    else
+                    {
+                        PlayerPlay();
+                    }
+                }
+            }
+        }
+
+        ///
+        /// Automatic events.
+        /// 
 
         /// <summary>
         /// Fired when the context menu is about to be opened.

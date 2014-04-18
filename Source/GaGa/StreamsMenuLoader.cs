@@ -47,7 +47,8 @@ namespace GaGa
         /// to the given ContextMenu.
         /// </summary>
         /// <param name="menu">Target context menu.</param>
-        public void LoadTo(ContextMenu menu)
+        /// <param name="onClick">Click event to attach to menu items.</param>
+        public void LoadTo(ContextMenu menu, EventHandler onClick)
         {
             file.CreateUnlessExists();
             DateTime lastWriteTime = file.GetLastWriteTime();
@@ -66,7 +67,7 @@ namespace GaGa
 
             try
             {
-                reader.Read(file, menu);
+                reader.Read(file, menu, onClick);
                 lastUpdated = lastWriteTime;
             }
 

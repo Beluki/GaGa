@@ -16,6 +16,7 @@ namespace GaGa
     {
         private StreamsFile file;
         private ContextMenu menu;
+        private EventHandler onClick;
 
         private Menu.MenuItemCollection currentMenuItems;
         private Dictionary<String, MenuItem> seenSubmenues;
@@ -32,6 +33,7 @@ namespace GaGa
         {
             this.file = null;
             this.menu = null;
+            this.onClick = null;
 
             this.currentMenuItems = null;
             this.seenSubmenues = new Dictionary<String, MenuItem>();
@@ -47,6 +49,7 @@ namespace GaGa
         {
             this.file = null;
             this.menu = null;
+            this.onClick = null;
 
             this.currentMenuItems = null;
             this.seenSubmenues.Clear();
@@ -140,12 +143,14 @@ namespace GaGa
 
         /// <summary>
         /// Add key=value pairs as clickable menu items.
-        /// The value is stored in the item .Tag property.
+        /// The radio stream is stored in the item .Tag property.
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
             MenuItem item = new MenuItem(key);
-            item.Tag = value;
+
+            item.Click += onClick;
+            item.Tag = new RadioStream(key, value);
 
             currentMenuItems.Add(item);
         }
@@ -155,11 +160,13 @@ namespace GaGa
         /// to a context menu.
         /// <param name="file">Streams file to read lines from.</param>
         /// <param name="menu">Target context menu.</param>
+        /// <param name="onClick">Click event to attach to menu items.</param>
         /// </summary>
-        public void Read(StreamsFile file, ContextMenu menu)
+        public void Read(StreamsFile file, ContextMenu menu, EventHandler onClick)
         {
             this.file = file;
             this.menu = menu;
+            this.onClick = onClick;
 
             // start at root:
             currentMenuItems = menu.MenuItems;
