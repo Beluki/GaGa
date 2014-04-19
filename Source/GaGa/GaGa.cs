@@ -191,8 +191,7 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Change the notify icon text.
-        /// Trims the text to 63 characters when longer.
+        /// Change the notify icon Icon and text.
         /// </summary>
         /// <param name="text">Icon text.</param>
         private void IconSet(Icon icon, String text)
@@ -230,7 +229,7 @@ namespace GaGa
 
         ///
         /// Player.
-        /// Those methods expect playerStream to be set.
+        /// All the methods expect playerStream to be set.
         ///
 
         /// <summary>
