@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -19,17 +19,6 @@ namespace GaGa
     internal static class Utils
     {
         /// <summary>
-        /// GetLastWriteTime() returns a DateTime equivalent to this
-        /// when a file is not found.
-        ///
-        /// MSDN:
-        /// If the file described in the path parameter does not exist
-        /// this method returns 12:00 midnight, January 1, 1601 A.D. (C.E.)
-        /// Coordinated Universal Time (UTC), adjusted to local time.
-        /// </summary>
-        public static readonly Int64 fileNotFoundUtc = new DateTime(1601, 1, 1).ToFileTimeUtc();
-
-        /// <summary>
         /// Load an Icon from an embedded resource.
         /// </summary>
         /// <param name="resource">
@@ -45,7 +34,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Copy an embedded resource to the local filesystem.
+        /// Copy an embedded resource to a file.
         /// </summary>
         /// <param name="resource">
         /// Resource path as a string, including namespace.
@@ -56,12 +45,14 @@ namespace GaGa
         public static void CopyResource(String resource, String filepath)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            using (Stream source = assembly.GetManifestResourceStream(resource))
             {
-                using (FileStream target = new FileStream(filepath,
-                    FileMode.Create, FileAccess.Write))
+                FileMode mode = FileMode.Create;
+                FileAccess access = FileAccess.Write;
+
+                using (FileStream target = new FileStream(filepath, mode, access))
                 {
-                    stream.CopyTo(target);
+                    source.CopyTo(target);
                 }
             }
         }
@@ -83,8 +74,8 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Get the directory path where the executable that started the
-        /// application can be found.
+        /// Get the path for the directory that contains
+        /// the application executable.
         /// </summary>
         public static String ApplicationDirectory()
         {
@@ -92,16 +83,15 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Show a MessageBox with Yes and No buttons. Return a Boolean
-        /// determining whether Yes (true) or No (false) was clicked.
+        /// Show a MessageBox with Yes and No buttons.
+        /// Return true when Yes was clicked, false otherwise.
         /// </summary>
         /// <param name="text">MessageBox text.</param>
         /// <param name="caption">MessageBox caption.</param>
         public static Boolean MessageBoxYesNo(String text, String caption)
         {
-            DialogResult result;
-            result = MessageBox.Show(text, caption, MessageBoxButtons.YesNo);
-            return result == DialogResult.OK;
+            MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+            return MessageBox.Show(text, caption, buttons) == DialogResult.Yes;
         }
     }
 }

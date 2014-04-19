@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -98,6 +98,14 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Do not accept urls (values) with no name.
+        /// </summary>
+        protected override void OnValueEmpty(String key)
+        {
+            ThrowReadError("Empty stream url, for stream name: " + key);
+        }
+
+        /// <summary>
         /// Syntax errors.
         /// </summary>
         protected override void OnUnknown(String line)
@@ -130,7 +138,7 @@ namespace GaGa
             seenSubmenues.TryGetValue(path, out submenu);
 
             // not seen, create and add to the current menu
-            // otherwise it's a duplicate and has already been added
+            // (otherwise it's a duplicate and has already been added)
             if (submenu == null)
             {
                 submenu = new MenuItem(subsection);
@@ -147,12 +155,20 @@ namespace GaGa
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
-            MenuItem item = new MenuItem(key);
+            try
+            {
+                Uri uri = new Uri(value);
 
-            item.Click += onClick;
-            item.Tag = new RadioStream(key, value);
+                MenuItem item = new MenuItem(key);
+                item.Click += onClick;
+                item.Tag = new RadioStream(key, uri);
 
-            currentMenuItems.Add(item);
+                currentMenuItems.Add(item);
+            }
+            catch (UriFormatException exception)
+            {
+                ThrowReadError(exception.Message);
+            }
         }
 
         /// <summary>
@@ -168,11 +184,11 @@ namespace GaGa
             this.menu = menu;
             this.onClick = onClick;
 
-            // start at root:
-            currentMenuItems = menu.MenuItems;
-
             try
             {
+                // start at root:
+                currentMenuItems = menu.MenuItems;
+
                 foreach (String line in file.ReadLineByLine())
                 {
                     currentLineNumber++;

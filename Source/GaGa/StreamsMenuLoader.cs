@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -62,7 +62,7 @@ namespace GaGa
             // lastUpdated should only contain *valid* dates or null, so that
             // when the file doesn't exist, MustReload() returns true.
 
-            if (lastWriteTime.ToFileTimeUtc() == Utils.fileNotFoundUtc)
+            if (lastWriteTime.IsFileNotFound())
                 throw new IOException("Streams file deleted during load.");
 
             try

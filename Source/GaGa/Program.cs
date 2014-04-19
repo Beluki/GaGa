@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -17,6 +17,8 @@ namespace GaGa
         [STAThread]
         private static void Main()
         {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new GaGa());
         }
     }

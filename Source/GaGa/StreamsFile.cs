@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;

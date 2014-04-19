@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -11,29 +11,28 @@ namespace GaGa
     internal class RadioStream
     {
         public readonly String Name;
-        public readonly String Link;
+        private Uri Uri;
 
         /// <summary>
-        /// Represents a playable stream with a name
-        /// and a specified link that can be parsed to an Uri.
+        /// Represents a playable radio stream.
         /// </summary>
         /// <param name="name">Stream name.</param>
-        /// <param name="link">Stream link.</param>
-        public RadioStream(String name, String link)
+        /// <param name="uri">Stream uri.</param>
+        public RadioStream(String name, Uri uri)
         {
             this.Name = name;
-            this.Link = link;
+            this.Uri = uri;
         }
 
         /// <summary>
-        /// Parse the stream link and return an Uri
-        /// suitable for MediaPlayer.
+        /// Return an Uri suitable for MediaPlayer playback.
         /// </summary>
-        public Uri GetUri()
+        public Uri GetPlayerUri()
         {
-            // this does nothing right now, but it will be useful
-            // if we add support for PLS or other formats:
-            return new Uri(Link);
+            // does nothing right now
+            // it can be used to preprocess the uri when adding
+            // support for PLS or other formats:
+            return Uri;
         }
     }
 }

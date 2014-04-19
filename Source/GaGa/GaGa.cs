@@ -1,6 +1,6 @@
 ﻿
 // GaGa.
-// A simple radio player running on the Windows notification area.
+// A minimal radio player for the Windows Tray.
 
 
 using System;
@@ -40,7 +40,7 @@ namespace GaGa
 
         // player state:
         private MediaPlayer player;
-        private RadioStream playerStream;
+        private RadioStream playerCurrentStream;
         private Boolean playerIsPlaying;
 
         /// <summary>
@@ -58,9 +58,9 @@ namespace GaGa
             icon = new NotifyIcon(container);
             icon.Icon = playIcon;
             icon.Visible = true;
-            icon.MouseClick += new MouseEventHandler(OnIconMouseClick);
+            icon.MouseClick += OnIconMouseClick;
+            icon.Text = "GaGa - Click to open menu";
 
-            IconSetNoStream();
             MenuRecreate();
 
             // non-loader menu items:
@@ -69,10 +69,10 @@ namespace GaGa
             errorOpenItem = new MenuItem("Error opening streams file (click for details)");
             errorReadItem = new MenuItem("Error reading streams file (click for details)");
 
-            editItem.Click += new EventHandler(OnEditItemClick);
-            exitItem.Click += new EventHandler(OnExitItemClick);
-            errorOpenItem.Click += new EventHandler(OnErrorOpenItemClick);
-            errorReadItem.Click += new EventHandler(OnErrorReadItemClick);
+            editItem.Click += OnEditItemClick;
+            exitItem.Click += OnExitItemClick;
+            errorOpenItem.Click += OnErrorOpenItemClick;
+            errorReadItem.Click += OnErrorReadItemClick;
 
             // paths:
             streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
@@ -84,17 +84,20 @@ namespace GaGa
 
             // player state:
             player = new MediaPlayer();
-            playerStream = null;
+            playerCurrentStream = null;
             playerIsPlaying = false;
+
+            player.MediaEnded += OnPlayerMediaEnded;
+            player.MediaFailed += OnPlayerMediaFailed;
         }
 
         ///
         /// Menu loading.
-        /// 
+        ///
 
         /// <summary>
         /// Clear the menu by deleting it and creating a new one from scratch.
-        /// Unlike menu.MenuItems.Clear() this avoids the problem of menus
+        /// Unlike menu.MenuItems.Clear() avoids the problem of menus
         /// caching their width.
         /// </summary>
         private void MenuRecreate()
@@ -183,11 +186,11 @@ namespace GaGa
 
         ///
         /// Streams file.
-        /// 
+        ///
 
         /// <summary>
         /// Edit the streams file with the default program
-        /// associated to the INI extension.
+        /// associated to the extension.
         /// </summary>
         private void StreamsFileEdit()
         {
@@ -204,73 +207,28 @@ namespace GaGa
         }
 
         ///
-        /// Icon switching.
-        /// 
+        /// Playing.
+        ///
 
         /// <summary>
-        /// Change the icon to no stream selected yet.
+        /// Play a stream.
         /// </summary>
-        private void IconSetNoStream()
+        /// <param name="stream">Stream to play.</param>
+        private void PlayerPlay(RadioStream stream)
         {
-            icon.Icon = playIcon;
-            icon.Text = "No stream selected\n"
-                      + "Click to open the menu";
-        }
+            player.Open(stream.GetPlayerUri());
+            player.Play();
+            playerIsPlaying = true;
 
-        /// <summary>
-        /// Change the icon state to playing.
-        /// </summary>
-        private void IconSetPlay()
-        {
+            // maximum icon text length is 63 characters
+            // cut and add ... on longer names:
+            String text = ("Playing - " + stream.Name);
+
+            if (text.Length > 63)
+                text = text.Substring(0, 60) + "...";
+
             icon.Icon = stopIcon;
-            icon.Text = "Playing\n"
-                      + "Left click: stop\n"
-                      + "Right click: menu";
-        }
-
-        /// <summary>
-        /// Change the icon state to stopped.
-        /// </summary>
-        private void IconSetStop()
-        {
-            icon.Icon = playIcon;
-            icon.Text = "Stopped\n"
-                      + "Left click: play\n"
-                      + "Right click: menu";
-        }
-
-        ///
-        /// Player.
-        /// Those methods expect playerStream to be set.
-        ///
-
-        /// <summary>
-        /// Open and play the currently selected stream.
-        /// </summary>
-        private void PlayerPlay()
-        {
-            try
-            {
-                Uri uri = playerStream.GetUri();
-                player.Open(uri);
-                player.Play();
-
-                playerIsPlaying = true;
-                IconSetPlay();
-            }
-
-            catch (UriFormatException exception)
-            {
-                PlayerStop();
-
-                String name = playerStream.Name;
-                String link = playerStream.Link;
-
-                String title = "Unable to open stream: " + name;
-                String text = link + "\n\n" + exception.Message;
-
-                icon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
-            }
+            icon.Text = text;
         }
 
         /// <summary>
@@ -281,21 +239,23 @@ namespace GaGa
             player.Stop();
             player.Close();
             playerIsPlaying = false;
-            IconSetStop();
+
+            icon.Icon = playIcon;
+            icon.Text = "Stopped";
         }
 
         ///
         /// Click events.
-        /// 
+        ///
 
         /// <summary>
         /// Fired when the user clicks on a stream item in the menu.
-        /// Change selected stream to the new one and play it.
+        /// Change current stream to the new one and play it.
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            playerStream = (RadioStream) ((MenuItem) sender).Tag;
-            PlayerPlay();
+            playerCurrentStream = (RadioStream) ((MenuItem) sender).Tag;
+            PlayerPlay(playerCurrentStream);
         }
 
         /// <summary>
@@ -369,15 +329,15 @@ namespace GaGa
                 }
                 else
                 {
-                    // no stream yet, invoke context menu instead
+                    // no stream yet, invoke the context menu instead
                     // so that the user can choose one:
-                    if (playerStream == null)
+                    if (playerCurrentStream == null)
                     {
                         icon.InvokeContextMenu();
                     }
                     else
                     {
-                        PlayerPlay();
+                        PlayerPlay(playerCurrentStream);
                     }
                 }
             }
@@ -385,7 +345,7 @@ namespace GaGa
 
         ///
         /// Automatic events.
-        /// 
+        ///
 
         /// <summary>
         /// Fired when the context menu is about to be opened.
@@ -393,6 +353,30 @@ namespace GaGa
         private void OnMenuPopup(Object sender, EventArgs e)
         {
             MenuUpdate();
+        }
+
+        /// <summary>
+        /// Fired when the current stream has no more data.
+        /// </summary>
+        private void OnPlayerMediaEnded(Object sender, EventArgs e)
+        {
+            PlayerStop();
+        }
+
+        /// <summary>
+        /// Fired when the current stream can't be played.
+        /// </summary>
+        private void OnPlayerMediaFailed(Object sender, ExceptionEventArgs e)
+        {
+            PlayerStop();
+
+            String name = playerCurrentStream.Name;
+            String uri = playerCurrentStream.GetPlayerUri().ToString();
+
+            String title = "Error playing stream: " + name;
+            String text = e.ErrorException.Message + "\n" + uri;
+
+            icon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
         }
     }
 }
