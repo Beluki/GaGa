@@ -15,9 +15,14 @@ namespace GaGa
 {
     internal class GaGa : ApplicationContext
     {
+        // paths:
+        private String streamsFilePath;
+        private String streamsFileResourcePath;
+
         // resources:
         private Icon playIcon;
         private Icon stopIcon;
+        private Icon muteIcon;
 
         // gui components:
         private Container container;
@@ -30,36 +35,37 @@ namespace GaGa
         private MenuItem errorOpenItem;
         private MenuItem errorReadItem;
 
-        // paths:
-        private String streamsFilePath;
-        private String streamsFileResourcePath;
-
         // menu file and loader:
         private StreamsFile streamsFile;
         private StreamsMenuLoader menuLoader;
 
         // player state:
         private MediaPlayer player;
-        private RadioStream playerCurrentStream;
+        private RadioStream playerStream;
         private Boolean playerIsPlaying;
 
         /// <summary>
         /// Actual implementation.
         /// </summary>
+        /// <param name="path">Streams file path.</param>
         public GaGa()
         {
+            // paths:
+            streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
+            streamsFileResourcePath = "GaGa.Resources.default-streams.ini";
+
             // resources:
             playIcon = Utils.LoadIconFromResource("GaGa.Resources.play.ico");
             stopIcon = Utils.LoadIconFromResource("GaGa.Resources.stop.ico");
+            muteIcon = Utils.LoadIconFromResource("GaGa.Resources.mute.ico");
 
             // gui components:
             container = new Container();
 
             icon = new NotifyIcon(container);
-            icon.Icon = playIcon;
-            icon.Visible = true;
             icon.MouseClick += OnIconMouseClick;
-            icon.Text = "GaGa - Click to open menu";
+            IconSet(playIcon, "GaGa - Click to open menu");
+            icon.Visible = true;
 
             MenuRecreate();
 
@@ -74,17 +80,13 @@ namespace GaGa
             errorOpenItem.Click += OnErrorOpenItemClick;
             errorReadItem.Click += OnErrorReadItemClick;
 
-            // paths:
-            streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
-            streamsFileResourcePath = "GaGa.Resources.default-streams.ini";
-
             // menu file and loader:
             streamsFile = new StreamsFile(streamsFilePath, streamsFileResourcePath);
             menuLoader = new StreamsMenuLoader(streamsFile);
 
             // player state:
             player = new MediaPlayer();
-            playerCurrentStream = null;
+            playerStream = null;
             playerIsPlaying = false;
 
             player.MediaEnded += OnPlayerMediaEnded;
@@ -185,6 +187,26 @@ namespace GaGa
         }
 
         ///
+        /// Icon.
+        ///
+
+        /// <summary>
+        /// Change the notify icon text.
+        /// Trims the text to 63 characters when longer.
+        /// </summary>
+        /// <param name="text">Icon text.</param>
+        private void IconSet(Icon icon, String text)
+        {
+            // maximum icon text length is 63 characters
+            // cut and add ... on longer names:
+            if (text.Length > 63)
+                text = text.Substring(0, 60) + "...";
+
+            this.icon.Icon = icon;
+            this.icon.Text = text;
+        }
+
+        ///
         /// Streams file.
         ///
 
@@ -207,28 +229,21 @@ namespace GaGa
         }
 
         ///
-        /// Playing.
+        /// Player.
+        /// Those methods expect playerStream to be set.
         ///
 
         /// <summary>
-        /// Play a stream.
+        /// Play the current stream.
         /// </summary>
-        /// <param name="stream">Stream to play.</param>
-        private void PlayerPlay(RadioStream stream)
+        private void PlayerPlay()
         {
-            player.Open(stream.GetPlayerUri());
+            player.Open(playerStream.GetPlayerUri());
             player.Play();
+            player.IsMuted = false;
             playerIsPlaying = true;
 
-            // maximum icon text length is 63 characters
-            // cut and add ... on longer names:
-            String text = ("Playing - " + stream.Name);
-
-            if (text.Length > 63)
-                text = text.Substring(0, 60) + "...";
-
-            icon.Icon = stopIcon;
-            icon.Text = text;
+            IconSet(stopIcon, "Playing - " + playerStream.Name);
         }
 
         /// <summary>
@@ -240,8 +255,42 @@ namespace GaGa
             player.Close();
             playerIsPlaying = false;
 
-            icon.Icon = playIcon;
-            icon.Text = "Stopped";
+            IconSet(playIcon, "Stopped - " + playerStream.Name);
+        }
+
+        ///
+        /// Toggle between play/stop.
+        ///
+        private void PlayerTogglePlayStop()
+        {
+            if (playerIsPlaying)
+            {
+                PlayerStop();
+            }
+            else
+            {
+                PlayerPlay();
+            }
+        }
+
+        /// <summary>
+        /// Toggle between muted/unmuted.
+        /// </summary>
+        private void PlayerToggleMuted()
+        {
+            if (playerIsPlaying)
+            {
+                player.IsMuted = !player.IsMuted;
+
+                if (player.IsMuted)
+                {
+                    IconSet(muteIcon, "Playing (muted) - " + playerStream.Name);
+                }
+                else
+                {
+                    IconSet(stopIcon, "Playing - " + playerStream.Name);
+                }
+            }
         }
 
         ///
@@ -254,8 +303,8 @@ namespace GaGa
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            playerCurrentStream = (RadioStream) ((MenuItem) sender).Tag;
-            PlayerPlay(playerCurrentStream);
+            playerStream = (RadioStream) ((MenuItem) sender).Tag;
+            PlayerPlay();
         }
 
         /// <summary>
@@ -295,6 +344,7 @@ namespace GaGa
                 exception.Line);
 
             String caption = "Error reading streams file";
+
             if (Utils.MessageBoxYesNo(text, caption))
                 StreamsFileEdit();
         }
@@ -323,22 +373,27 @@ namespace GaGa
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (playerIsPlaying)
+                // no stream yet, invoke the context menu instead:
+                if (playerStream == null)
                 {
-                    PlayerStop();
+                    icon.InvokeContextMenu();
                 }
                 else
                 {
-                    // no stream yet, invoke the context menu instead
-                    // so that the user can choose one:
-                    if (playerCurrentStream == null)
-                    {
-                        icon.InvokeContextMenu();
-                    }
-                    else
-                    {
-                        PlayerPlay(playerCurrentStream);
-                    }
+                    PlayerTogglePlayStop();
+                }
+            }
+
+            else if (e.Button == MouseButtons.Middle)
+            {
+                // no stream yet, invoke the context menu instead:
+                if (playerStream == null)
+                {
+                    icon.InvokeContextMenu();
+                }
+                else
+                {
+                    PlayerToggleMuted();
                 }
             }
         }
@@ -370,8 +425,8 @@ namespace GaGa
         {
             PlayerStop();
 
-            String name = playerCurrentStream.Name;
-            String uri = playerCurrentStream.GetPlayerUri().ToString();
+            String name = playerStream.Name;
+            String uri = playerStream.GetPlayerUri().ToString();
 
             String title = "Error playing stream: " + name;
             String text = e.ErrorException.Message + "\n" + uri;
