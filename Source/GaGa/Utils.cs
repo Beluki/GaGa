@@ -19,11 +19,9 @@ namespace GaGa
     internal static class Utils
     {
         /// <summary>
-        /// Load an Icon from an embedded resource.
+        /// Load an icon from an embedded resource.
         /// </summary>
-        /// <param name="resource">
-        /// Resource path as a string, including namespace.
-        /// </param>
+        /// <param name="resource">Resource path, including namespace.</param>
         public static Icon LoadIconFromResource(String resource)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -36,12 +34,8 @@ namespace GaGa
         /// <summary>
         /// Copy an embedded resource to a file.
         /// </summary>
-        /// <param name="resource">
-        /// Resource path as a string, including namespace.
-        /// </param>
-        /// <param name="filepath">
-        /// Destination path as a string.
-        /// </param>
+        /// <param name="resource">Resource path, including namespace.</param>
+        /// <param name="filepath">Destination path.</param>
         public static void CopyResource(String resource, String filepath)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -60,7 +54,7 @@ namespace GaGa
         /// <summary>
         /// Iterate all lines from an UTF8-encoded text file.
         /// </summary>
-        /// <param name="filepath">File path as a string.</param>
+        /// <param name="filepath">File path.</param>
         public static IEnumerable<String> ReadLineByLine(String filepath)
         {
             String line;
@@ -75,7 +69,7 @@ namespace GaGa
 
         /// <summary>
         /// Get the path for the directory that contains
-        /// the application executable.
+        /// the current application executable.
         /// </summary>
         public static String ApplicationDirectory()
         {

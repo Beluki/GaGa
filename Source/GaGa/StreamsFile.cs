@@ -33,20 +33,20 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Returns the date and time this file was last written to.
-        /// </summary>
-        public DateTime GetLastWriteTime()
-        {
-            return File.GetLastWriteTime(FilePath);
-        }
-
-        /// <summary>
         /// Recreate the file from the embedded resource unless it exists.
         /// </summary>
         public void CreateUnlessExists()
         {
             if (!File.Exists(FilePath))
                 Utils.CopyResource(Resource, FilePath);
+        }
+
+        /// <summary>
+        /// Returns the date and time this file was last written to.
+        /// </summary>
+        public DateTime GetLastWriteTime()
+        {
+            return File.GetLastWriteTime(FilePath);
         }
 
         /// <summary>

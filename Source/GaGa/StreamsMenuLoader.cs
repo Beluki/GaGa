@@ -18,9 +18,8 @@ namespace GaGa
         private Nullable<DateTime> lastUpdated;
 
         /// <summary>
-        /// Can read a StreamsFile as an INI, monitor changes,
-        /// and add all the sections and items to a ContextMenu
-        /// as submenus and clickable items.
+        /// Can read or recreate a streams file, monitor changes,
+        /// and add all the sections and items to a context menu.
         /// </summary>
         /// <param name="file">Streams file to read from.</param>
         public StreamsMenuLoader(StreamsFile file)
@@ -31,10 +30,9 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Determine whether we need to reload our streams file.
+        /// Determine whether we need to reload the streams file.
         ///
         /// Returns true when the file does not exist
-        /// (so LoadTo can recreate it on the next call)
         /// or when it changed since the last update.
         /// </summary>
         public Boolean MustReload()
@@ -44,7 +42,7 @@ namespace GaGa
 
         /// <summary>
         /// Read the streams file again, adding submenus and items
-        /// to the given ContextMenu.
+        /// to the given context menu.
         /// </summary>
         /// <param name="menu">Target context menu.</param>
         /// <param name="onClick">Click event to attach to menu items.</param>
@@ -71,7 +69,7 @@ namespace GaGa
                 lastUpdated = lastWriteTime;
             }
 
-            // update our time on StreamFileReadErrors too
+            // update our time on StreamFileReadError too
             // because the file will still be wrong until it changes:
             catch (StreamsFileReadError)
             {

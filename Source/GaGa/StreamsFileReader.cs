@@ -25,8 +25,8 @@ namespace GaGa
         private String currentLine;
 
         /// <summary>
-        /// An INI reader that reads lines from a streams file
-        /// adding sections and key=value pairs to a ContextMenu
+        /// An INIReader that reads lines from a streams file
+        /// adding sections and key=value pairs to a context menu
         /// as submenus and clickable items.
         /// </summary>
         public StreamsFileReader()
@@ -155,40 +155,37 @@ namespace GaGa
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
+            MenuItem item = new MenuItem(key, onClick);
+
             try
             {
-                Uri uri = new Uri(value);
-
-                MenuItem item = new MenuItem(key);
-                item.Click += onClick;
-                item.Tag = new RadioStream(key, uri);
-
-                currentMenuItems.Add(item);
+                item.Tag = new RadioStream(key, new Uri(value));
             }
             catch (UriFormatException exception)
             {
                 ThrowReadError(exception.Message);
             }
+
+            currentMenuItems.Add(item);
         }
 
         /// <summary>
-        /// Read lines from a streams file adding submenus and items
-        /// to a context menu.
+        /// Read a streams file adding submenus items to a context menu.
+        /// </summary>
         /// <param name="file">Streams file to read lines from.</param>
         /// <param name="menu">Target context menu.</param>
         /// <param name="onClick">Click event to attach to menu items.</param>
-        /// </summary>
         public void Read(StreamsFile file, ContextMenu menu, EventHandler onClick)
         {
             this.file = file;
             this.menu = menu;
             this.onClick = onClick;
 
+            // start at root:
+            currentMenuItems = menu.MenuItems;
+
             try
             {
-                // start at root:
-                currentMenuItems = menu.MenuItems;
-
                 foreach (String line in file.ReadLineByLine())
                 {
                     currentLineNumber++;
