@@ -162,7 +162,7 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Edit the streams file with the default program
+        /// Open the streams file with the default program
         /// associated to the extension.
         /// </summary>
         private void StreamsFileEdit()
@@ -188,7 +188,8 @@ namespace GaGa
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            PlayerStream stream = (PlayerStream) ((MenuItem) sender).Tag;
+            MenuItem item = (MenuItem) sender;
+            PlayerStream stream = new PlayerStream(item.Text, (Uri) item.Tag);
             player.Play(stream);
         }
 

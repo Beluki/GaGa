@@ -89,14 +89,6 @@ namespace GaGa
         {
             get { return Path.GetDirectoryName(Application.ExecutablePath); }
         }
-
-        /// <summary>
-        /// Get the name of the current logged user.
-        /// </summary>
-        public static String Username
-        {
-            get { return Environment.UserName; }
-        }
     }
 }
 

@@ -158,7 +158,7 @@ namespace GaGa
 
             try
             {
-                item.Tag = new PlayerStream(key, new Uri(value));
+                item.Tag = new Uri(value);
             }
             catch (UriFormatException exception)
             {

@@ -72,7 +72,8 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Execute the file as a process.
+        /// Open the file with the default application
+        /// that handles the extension.
         /// </summary>
         public void Run()
         {
