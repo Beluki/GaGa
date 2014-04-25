@@ -13,7 +13,14 @@ namespace GaGa
 {
     internal class StreamsFile
     {
+        /// <summary>
+        /// File path in the filesystem.
+        /// </summary>
         public readonly String FilePath;
+
+        /// <summary>
+        /// Resource name used to recreate it, including namespace.
+        /// </summary>
         public readonly String Resource;
 
         /// <summary>
@@ -21,28 +28,28 @@ namespace GaGa
         /// from an embedded resource.
         /// </summary>
         /// <param name="filepath">
-        /// File path for the target file.
+        /// File path in the filesystem.
         /// </param>
         /// <param name="resource">
-        /// Path to the resource used to recreate it, including namespace.
+        /// Resource name used to recreate it, including namespace.
         /// </param>
         public StreamsFile(String filepath, String resource)
         {
-            this.FilePath = filepath;
-            this.Resource = resource;
+            FilePath = filepath;
+            Resource = resource;
         }
 
         /// <summary>
         /// Recreate the file from the embedded resource unless it exists.
         /// </summary>
-        public void CreateUnlessExists()
+        public void RecreateUnlessExists()
         {
             if (!File.Exists(FilePath))
-                Utils.CopyResource(Resource, FilePath);
+                Utils.ResourceCopy(Resource, FilePath);
         }
 
         /// <summary>
-        /// Returns the date and time this file was last written to.
+        /// Return the date and time the file was last written to.
         /// </summary>
         public DateTime GetLastWriteTime()
         {
@@ -52,9 +59,16 @@ namespace GaGa
         /// <summary>
         /// Iterate all lines from the file.
         /// </summary>
-        public IEnumerable<String> ReadLineByLine()
+        public IEnumerable<String> ReadLines()
         {
-            return Utils.ReadLineByLine(FilePath);
+            String line;
+            using (StreamReader reader = File.OpenText(FilePath))
+            {
+                while ((line = reader.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
         }
 
         /// <summary>

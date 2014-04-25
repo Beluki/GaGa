@@ -4,7 +4,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -13,16 +12,31 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    /// <summary>
-    /// Stand-alone utilities.
-    /// </summary>
     internal static class Utils
     {
+        ///
+        /// Constants.
+        /// 
+
         /// <summary>
-        /// Load an icon from an embedded resource.
+        /// GetLastWriteTime() returns this when a file is not found.
+        ///
+        /// MSDN:
+        /// If the file described in the path parameter does not exist
+        /// this method returns 12:00 midnight, January 1, 1601 A.D. (C.E.)
+        /// Coordinated Universal Time (UTC), adjusted to local time.
         /// </summary>
-        /// <param name="resource">Resource path, including namespace.</param>
-        public static Icon LoadIconFromResource(String resource)
+        public static readonly Int64 FileNotFoundUtc = new DateTime(1601, 1, 1).ToFileTimeUtc();
+
+        ///
+        /// Resource files.
+        ///
+
+        /// <summary>
+        /// Load an embedded resource as an icon.
+        /// </summary>
+        /// <param name="resource">Resource name, including namespace.</param>
+        public static Icon ResourceAsIcon(String resource)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream stream = assembly.GetManifestResourceStream(resource))
@@ -34,58 +48,46 @@ namespace GaGa
         /// <summary>
         /// Copy an embedded resource to a file.
         /// </summary>
-        /// <param name="resource">Resource path, including namespace.</param>
+        /// <param name="resource">Resource name, including namespace.</param>
         /// <param name="filepath">Destination path.</param>
-        public static void CopyResource(String resource, String filepath)
+        public static void ResourceCopy(String resource, String filepath)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream source = assembly.GetManifestResourceStream(resource))
             {
-                FileMode mode = FileMode.Create;
-                FileAccess access = FileAccess.Write;
-
-                using (FileStream target = new FileStream(filepath, mode, access))
+                using (FileStream target = new FileStream(filepath, FileMode.Create, FileAccess.Write))
                 {
                     source.CopyTo(target);
                 }
             }
         }
 
-        /// <summary>
-        /// Iterate all lines from an UTF8-encoded text file.
-        /// </summary>
-        /// <param name="filepath">File path.</param>
-        public static IEnumerable<String> ReadLineByLine(String filepath)
-        {
-            String line;
-            using (StreamReader reader = File.OpenText(filepath))
-            {
-                while ((line = reader.ReadLine()) != null)
-                {
-                    yield return line;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get the path for the directory that contains
-        /// the current application executable.
-        /// </summary>
-        public static String ApplicationDirectory()
-        {
-            return Path.GetDirectoryName(Application.ExecutablePath);
-        }
+        ///
+        /// Message boxes.
+        ///
 
         /// <summary>
         /// Show a MessageBox with Yes and No buttons.
-        /// Return true when Yes was clicked, false otherwise.
+        /// Return true when Yes is clicked, false otherwise.
         /// </summary>
         /// <param name="text">MessageBox text.</param>
         /// <param name="caption">MessageBox caption.</param>
         public static Boolean MessageBoxYesNo(String text, String caption)
         {
-            MessageBoxButtons buttons = MessageBoxButtons.YesNo;
-            return MessageBox.Show(text, caption, buttons) == DialogResult.Yes;
+            return MessageBox.Show(text, caption, MessageBoxButtons.YesNo) == DialogResult.Yes;
+        }
+
+        ///
+        /// Paths.
+        ///
+
+        /// <summary>
+        /// Get the path for the directory that contains
+        /// the current application executable.
+        /// </summary>
+        public static String ApplicationFolder
+        {
+            get { return Path.GetDirectoryName(Application.ExecutablePath); }
         }
     }
 }

@@ -10,8 +10,19 @@ namespace GaGa
 {
     internal class StreamsFileReadError : Exception
     {
+        /// <summary>
+        /// Streams file that triggered the error.
+        /// </summary>
         public readonly StreamsFile File;
+
+        /// <summary>
+        /// Line text for the incorrect line.
+        /// </summary>
         public readonly String Line;
+
+        /// <summary>
+        /// Line where the error happened.
+        /// </summary>
         public readonly Int32 LineNumber;
 
         /// <summary>
@@ -21,13 +32,11 @@ namespace GaGa
         /// <param name="file">Streams file that triggered the error.</param>
         /// <param name="line">Line text for the incorrect line.</param>
         /// <param name="linenumber">Line where the error happened.</param>
-        public StreamsFileReadError
-            (String message, StreamsFile file, String line, Int32 linenumber)
-            : base(message)
+        public StreamsFileReadError(String message, StreamsFile file, String line, Int32 linenumber) : base(message)
         {
-            this.File = file;
-            this.Line = line;
-            this.LineNumber = linenumber;
+            File = file;
+            Line = line;
+            LineNumber = linenumber;
         }
     }
 }

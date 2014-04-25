@@ -31,15 +31,15 @@ namespace GaGa
         /// </summary>
         public StreamsFileReader()
         {
-            this.file = null;
-            this.menu = null;
-            this.onClick = null;
+            file = null;
+            menu = null;
+            onClick = null;
 
-            this.currentMenuItems = null;
-            this.seenSubmenues = new Dictionary<String, MenuItem>();
+            currentMenuItems = null;
+            seenSubmenues = new Dictionary<String, MenuItem>();
 
-            this.currentLineNumber = 0;
-            this.currentLine = String.Empty;
+            currentLineNumber = 0;
+            currentLine = String.Empty;
         }
 
         /// <summary>
@@ -47,20 +47,19 @@ namespace GaGa
         /// </summary>
         private void ResetState()
         {
-            this.file = null;
-            this.menu = null;
-            this.onClick = null;
+            file = null;
+            menu = null;
+            onClick = null;
 
-            this.currentMenuItems = null;
-            this.seenSubmenues.Clear();
+            currentMenuItems = null;
+            seenSubmenues.Clear();
 
-            this.currentLineNumber = 0;
-            this.currentLine = String.Empty;
+            currentLineNumber = 0;
+            currentLine = String.Empty;
         }
 
         /// <summary>
-        /// Concise helper to throw StreamsFileReadError
-        /// exceptions during reading.
+        /// Concise helper to throw StreamsFileReadError exceptions.
         /// </summary>
         /// <param name="message">Error message.</param>
         private void ThrowReadError(String message)
@@ -86,11 +85,11 @@ namespace GaGa
         /// </summary>
         protected override void OnSubSectionEmpty(String path)
         {
-            ThrowReadError("Empty submenu name, at path: " + path);
+            ThrowReadError("Empty submenu name.");
         }
 
         /// <summary>
-        /// Do not accept streams (keys) with no name.
+        /// Do not accept streams with no name.
         /// </summary>
         protected override void OnKeyEmpty(String value)
         {
@@ -98,11 +97,11 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Do not accept urls (values) with no name.
+        /// Do not accept streams with no url.
         /// </summary>
         protected override void OnValueEmpty(String key)
         {
-            ThrowReadError("Empty stream url, for stream name: " + key);
+            ThrowReadError("Empty stream url.");
         }
 
         /// <summary>
@@ -138,7 +137,7 @@ namespace GaGa
             seenSubmenues.TryGetValue(path, out submenu);
 
             // not seen, create and add to the current menu
-            // (otherwise it's a duplicate and has already been added)
+            // otherwise it's a duplicate and has already been added:
             if (submenu == null)
             {
                 submenu = new MenuItem(subsection);
@@ -151,7 +150,7 @@ namespace GaGa
 
         /// <summary>
         /// Add key=value pairs as clickable menu items.
-        /// The radio stream is stored in the item .Tag property.
+        /// The player stream is stored in the item .Tag property.
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
@@ -159,7 +158,7 @@ namespace GaGa
 
             try
             {
-                item.Tag = new RadioStream(key, new Uri(value));
+                item.Tag = new PlayerStream(key, new Uri(value));
             }
             catch (UriFormatException exception)
             {
@@ -186,7 +185,7 @@ namespace GaGa
 
             try
             {
-                foreach (String line in file.ReadLineByLine())
+                foreach (String line in file.ReadLines())
                 {
                     currentLineNumber++;
                     currentLine = line;

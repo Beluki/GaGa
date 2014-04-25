@@ -18,9 +18,8 @@ namespace GaGa
         [STAThread]
         private static void Main()
         {
-            // by default use an streams.ini file located
-            // in the same folder as the executable:
-            String streamsFilePath = Path.Combine(Utils.ApplicationDirectory(), "streams.ini");
+            // use an streams.ini file located in the same folder as the executable:
+            String streamsFilePath = Path.Combine(Utils.ApplicationFolder, "streams.ini");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

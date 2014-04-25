@@ -4,7 +4,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
@@ -15,6 +14,7 @@ namespace GaGa
     {
         private readonly StreamsFile file;
         private readonly StreamsFileReader reader;
+
         private Nullable<DateTime> lastUpdated;
 
         /// <summary>
@@ -25,43 +25,55 @@ namespace GaGa
         public StreamsMenuLoader(StreamsFile file)
         {
             this.file = file;
-            this.reader = new StreamsFileReader();
-            this.lastUpdated = null;
+            reader = new StreamsFileReader();
+
+            lastUpdated = null;
         }
 
         /// <summary>
-        /// Determine whether we need to reload the streams file.
-        ///
-        /// Returns true when the file does not exist
-        /// or when it changed since the last update.
+        /// Determine whether the menu must be updated.
+        /// True when the file is inaccesible or changed since the last update.
         /// </summary>
-        public Boolean MustReload()
+        public Boolean MustReload
         {
-            return lastUpdated != file.GetLastWriteTime();
+            get
+            {
+                try
+                {
+                    return lastUpdated != file.GetLastWriteTime();
+                }
+
+                // GetLastWriteTime can raise exceptions
+                // despite returning a date when the file does not exist:
+                catch (Exception)
+                {
+                    return true;
+                }
+            }
         }
 
         /// <summary>
         /// Read the streams file again, adding submenus and items
-        /// to the given context menu.
+        /// to the given context menu. The file will be recreated first
+        /// when it doesn't exist.
         /// </summary>
         /// <param name="menu">Target context menu.</param>
         /// <param name="onClick">Click event to attach to menu items.</param>
         public void LoadTo(ContextMenu menu, EventHandler onClick)
         {
-            file.CreateUnlessExists();
+            file.RecreateUnlessExists();
             DateTime lastWriteTime = file.GetLastWriteTime();
 
             // Corner case:
             //
-            // We made an attempt to recreate the file when needed
-            // but it could be deleted right before calling GetLastWriteTime().
+            // RecreateUnlessExists() didn't raise an exception
+            // but the file was deleted before calling GetLastWriteTime()
             //
             // In this case, raise an exception now, don't touch lastUpdated.
-            // lastUpdated should only contain *valid* dates or null, so that
-            // when the file doesn't exist, MustReload() returns true.
+            // lastUpdated should only contain *valid* dates or null.
 
-            if (lastWriteTime.IsFileNotFound())
-                throw new IOException("Streams file deleted during load.");
+            if (lastWriteTime.ToFileTimeUtc() == Utils.FileNotFoundUtc)
+                throw new IOException("Streams file deleted after creating it.");
 
             try
             {
@@ -69,8 +81,8 @@ namespace GaGa
                 lastUpdated = lastWriteTime;
             }
 
-            // update our time on StreamFileReadError too
-            // because the file will still be wrong until it changes:
+            // update time on parsing errors
+            // because the file will still be wrong until further changes:
             catch (StreamsFileReadError)
             {
                 lastUpdated = lastWriteTime;
