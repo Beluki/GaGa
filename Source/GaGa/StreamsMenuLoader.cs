@@ -53,6 +53,36 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Recreate the streams file if it doesn't exist
+        /// and get the last write time.
+        /// </summary>
+        private DateTime RecreatingGetLastWriteTime()
+        {
+            try
+            {
+                file.RecreateUnlessExists();
+                DateTime lastWriteTime = file.GetLastWriteTime();
+
+                // Corner case:
+                //
+                // RecreateUnlessExists() didn't raise an exception
+                // but the file was deleted before calling GetLastWriteTime()
+
+                if (lastWriteTime.ToFileTimeUtc() == Utils.FileNotFoundUtc)
+                    throw new IOException("Streams file deleted after creating it.");
+
+                return lastWriteTime;
+            }
+
+            // reset time on exceptions during recreation:
+            catch (Exception)
+            {
+                lastUpdated = null;
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Read the streams file again, adding submenus and items
         /// to the given context menu. The file will be recreated first
         /// when it doesn't exist.
@@ -61,19 +91,7 @@ namespace GaGa
         /// <param name="onClick">Click event to attach to menu items.</param>
         public void LoadTo(ContextMenu menu, EventHandler onClick)
         {
-            file.RecreateUnlessExists();
-            DateTime lastWriteTime = file.GetLastWriteTime();
-
-            // Corner case:
-            //
-            // RecreateUnlessExists() didn't raise an exception
-            // but the file was deleted before calling GetLastWriteTime()
-            //
-            // In this case, raise an exception now, don't touch lastUpdated.
-            // lastUpdated should only contain *valid* dates or null.
-
-            if (lastWriteTime.ToFileTimeUtc() == Utils.FileNotFoundUtc)
-                throw new IOException("Streams file deleted after creating it.");
+            DateTime lastWriteTime = RecreatingGetLastWriteTime();
 
             try
             {
@@ -81,11 +99,17 @@ namespace GaGa
                 lastUpdated = lastWriteTime;
             }
 
-            // update time on parsing errors
-            // because the file will still be wrong until further changes:
+            // update time on parsing errors:
             catch (StreamsFileReadError)
             {
                 lastUpdated = lastWriteTime;
+                throw;
+            }
+
+            // reset time on non-parsing exceptions (IO) while reading:
+            catch (Exception)
+            {
+                lastUpdated = null;
                 throw;
             }
         }
