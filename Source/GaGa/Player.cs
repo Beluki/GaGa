@@ -4,12 +4,11 @@
 
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Threading;
+
 
 namespace GaGa
 {
@@ -19,11 +18,11 @@ namespace GaGa
         private readonly MediaPlayer player;
 
         private PlayerStream source;
-        private Boolean playing;
+        private Boolean isIdle;
 
-        private readonly Icon playIcon;
-        private readonly Icon stopIcon;
-        private readonly Icon muteIcon;
+        private readonly Icon idleIcon;
+        private readonly Icon playingIcon;
+        private readonly Icon playingMutedIcon;
 
         private readonly DispatcherTimer bufferingIconTimer;
         private readonly Icon[] bufferingIcons;
@@ -49,11 +48,11 @@ namespace GaGa
             player.MediaFailed += OnMediaFailed;
 
             source = null;
-            playing = false;
+            isIdle = true;
 
-            playIcon = Utils.ResourceAsIcon("GaGa.Resources.play.ico");
-            stopIcon = Utils.ResourceAsIcon("GaGa.Resources.stop.ico");
-            muteIcon = Utils.ResourceAsIcon("GaGa.Resources.mute.ico");
+            idleIcon = Utils.ResourceAsIcon("GaGa.Resources.idle.ico");
+            playingIcon = Utils.ResourceAsIcon("GaGa.Resources.playing.ico");
+            playingMutedIcon = Utils.ResourceAsIcon("GaGa.Resources.playing-muted.ico");
 
             bufferingIcons = new Icon[] {
                 Utils.ResourceAsIcon("GaGa.Resources.buffering1.ico"),
@@ -76,36 +75,38 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Updates the notify icon and tooltip text
+        /// Updates the notify icon icon and tooltip text
         /// depending on the current player state.
         /// </summary>
         private void UpdateIcon()
         {
-            String text;
             Icon icon;
+            String text;
 
-            // add player state:
-            if (playing)
+            // player state:
+            if (isIdle)
             {
-                text = "Playing";
-                icon = stopIcon;
-
-                if (player.IsMuted)
-                {
-                    text += " (muted) ";
-                    icon = muteIcon;
-                }
+                icon = idleIcon;
+                text = "Idle";
             }
             else
             {
-                text = "Idle";
-                icon = playIcon;
+                if (player.IsMuted)
+                {
+                    icon = playingMutedIcon;
+                    text = "Playing (muted)";
+                }
+                else
+                {
+                    icon = playingIcon;
+                    text = "Playing";
+                }
             }
 
-            // add separator:
+            // separator:
             text += " - ";
 
-            // add source state:
+            // source state:
             if (source != null)
             {
                 text += source.Name;
@@ -120,11 +121,11 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Animates the icon while buffering.
+        /// Override the current icon with an animation while buffering.
         /// </summary>
         private void bufferingIconTimer_Tick(Object sender, EventArgs e)
         {
-            // the mute icon has priority, do not change:
+            // the mute icon has priority over the buffering icons:
             if (!player.IsMuted)
                 notifyIcon.Icon = bufferingIcons[currentBufferingIcon];
 
@@ -147,7 +148,7 @@ namespace GaGa
             player.Play();
             player.IsMuted = false;
 
-            playing = true;
+            isIdle = false;
             UpdateIcon();
         }
 
@@ -162,7 +163,7 @@ namespace GaGa
             bufferingIconTimer.Stop();
             currentBufferingIcon = 0;
 
-            playing = false;
+            isIdle = true;
             UpdateIcon();
         }
 
@@ -171,13 +172,13 @@ namespace GaGa
         /// </summary>
         private void TogglePlay()
         {
-            if (playing)
+            if (isIdle)
             {
-                StopPlaying();
+                StartPlaying();
             }
             else
             {
-                StartPlaying();
+                StopPlaying();
             }
         }
 
@@ -231,11 +232,11 @@ namespace GaGa
             String text = e.ErrorException.Message + "\n" + source.Uri;
 
             notifyIcon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
-        }        
-        
+        }
+
         ///
         /// Safe external interface/mouse control.
-        /// 
+        ///
 
         /// <summary>
         /// Open a stream and start playing it.
@@ -248,34 +249,42 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Toggle play with the left mouse button when there is a stream.
-        /// Show the context menu otherwise.
+        /// Stop playing the current stream.
+        /// </summary>
+        public void Stop()
+        {
+            StopPlaying();
+        }
+
+        /// <summary>
+        /// Toggle play with the left mouse button.
+        /// When no stream has been selected, show the context menu instead.
         /// </summary>
         private void OnLeftMouseClick()
         {
-            if (source != null)
+            if (source == null)
             {
-                TogglePlay();
+                notifyIcon.InvokeContextMenu();
             }
             else
             {
-                notifyIcon.InvokeContextMenu();
+                TogglePlay();
             }
         }
 
         /// <summary>
-        /// Toggle mute with the wheel button when playing.
-        /// Show the context menu otherwise.
+        /// Toggle mute with the wheel button.
+        /// When idle, show the context menu instead.
         /// </summary>
         private void OnMiddleMouseClick()
         {
-            if (playing)
+            if (isIdle)
             {
-                ToggleMute();
+                notifyIcon.InvokeContextMenu();
             }
             else
             {
-                notifyIcon.InvokeContextMenu();
+                ToggleMute();
             }
         }
 
@@ -299,7 +308,7 @@ namespace GaGa
                 case MouseButtons.XButton2:
                     break;
             }
-        }       
+        }
     }
 }
 

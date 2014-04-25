@@ -21,7 +21,7 @@ namespace GaGa
         public readonly Uri Uri;
 
         /// <summary>
-        /// Represents a playable media stream. 
+        /// Represents a playable media stream.
         /// </summary>
         /// <param name="name">Stream name.</param>
         /// <param name="uri">Streaming uri.</param>

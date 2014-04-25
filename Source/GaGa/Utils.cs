@@ -16,7 +16,7 @@ namespace GaGa
     {
         ///
         /// Constants.
-        /// 
+        ///
 
         /// <summary>
         /// GetLastWriteTime() returns this when a file is not found.
@@ -78,16 +78,24 @@ namespace GaGa
         }
 
         ///
-        /// Paths.
+        /// OS information.
         ///
 
         /// <summary>
         /// Get the path for the directory that contains
         /// the current application executable.
         /// </summary>
-        public static String ApplicationFolder
+        public static String ExeFolder
         {
             get { return Path.GetDirectoryName(Application.ExecutablePath); }
+        }
+
+        /// <summary>
+        /// Get the name of the current logged user.
+        /// </summary>
+        public static String Username
+        {
+            get { return Environment.UserName; }
         }
     }
 }

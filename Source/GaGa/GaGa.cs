@@ -66,7 +66,7 @@ namespace GaGa
 
         ///
         /// Reloading the menu.
-        /// 
+        ///
 
         /// <summary>
         /// Clear the menu by deleting it and creating a new one from scratch.
@@ -157,9 +157,9 @@ namespace GaGa
             }
         }
 
-        /// 
+        ///
         /// Streams file actions.
-        /// 
+        ///
 
         /// <summary>
         /// Edit the streams file with the default program
@@ -181,7 +181,7 @@ namespace GaGa
 
         ///
         /// Clicking on menu items.
-        /// 
+        ///
 
         /// <summary>
         /// Stream clicked, play it.
@@ -244,6 +244,7 @@ namespace GaGa
         /// </summary>
         private void OnExitItemClick(Object sender, EventArgs e)
         {
+            player.Stop();
             notifyIcon.Visible = false;
             Application.Exit();
         }

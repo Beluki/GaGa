@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GaGa", "GaGa\GaGa.csproj", "{1A21E3D0-FE5E-41AE-BE52-3C51CF6B7A5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GaGa", "GaGa\GaGa.csproj", "{1F405E24-B06B-438A-910D-72BED825739F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1A21E3D0-FE5E-41AE-BE52-3C51CF6B7A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A21E3D0-FE5E-41AE-BE52-3C51CF6B7A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A21E3D0-FE5E-41AE-BE52-3C51CF6B7A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A21E3D0-FE5E-41AE-BE52-3C51CF6B7A5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F405E24-B06B-438A-910D-72BED825739F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F405E24-B06B-438A-910D-72BED825739F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F405E24-B06B-438A-910D-72BED825739F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F405E24-B06B-438A-910D-72BED825739F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
