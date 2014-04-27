@@ -70,7 +70,7 @@ milliseconds, even with hundreds of radio stations defined.
 
 Building GaGa is a matter of opening the included Visual Studio 2013
 solution and clicking the build button (or using msbuild). The source code
-has no dependencies other than the .NET Framework 4.0+.
+has no dependencies other than the [.NET Framework][] 4.0+.
 
 I'll provide prebuilt binaries if there are requests.
 
@@ -80,8 +80,8 @@ provided the .NET Framework is available on the target machine.
 
 ### Portability
 
-GaGa is tested on Windows 7 and 8, using the .NET Framework 4.0+. Mono is
-not supported, because it doesn't implement MediaPlayer (in PresentationCore)
+GaGa is tested on Windows 7 and 8, using the .NET Framework 4.0+. [Mono][]
+is not supported, because it doesn't implement MediaPlayer (in PresentationCore)
 which GaGa uses for playback.
 
 The streams file encoding is UTF-8 with or without a BOM signature.
@@ -100,5 +100,7 @@ folder for more information. No warranty though.
 
 [Documentation]: https://github.com/Beluki/GaGa/tree/master/Documentation
 
+[Mono]: http://mono-project.com
+[.NET Framework]: http://www.microsoft.com/en-us/download/details.aspx?id=30653
 [RadioTray]: http://radiotray.sourceforge.net
 
