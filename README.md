@@ -78,6 +78,15 @@ GaGa doesn't need to be installed. It can run from any folder and doesn't
 write to the Windows registry. It's possible to run it from an usb stick
 provided the .NET Framework is available on the target machine.
 
+### Where to find radio stations
+
+GaGa only includes the Jamendo radio stations in the default ini. Here are
+some places with tons of radio stations, classified by genre or by country:
+
+* [Listen Live](http://www.listenlive.eu)
+* [Radionomy](http://www.radionomy.com/en)
+* [The Icecast Directory](http://dir.xiph.org)
+
 ### Portability
 
 GaGa is tested on Windows 7 and 8, using the .NET Framework 4.0+. [Mono][]
@@ -87,15 +96,6 @@ which GaGa uses for playback.
 The streams file encoding is UTF-8 with or without a BOM signature. Notepad
 will work, although I suggest something better such as [Notepad2][] or
 [Sublime Text][].
-
-### Where to find radio stations
-
-GaGa only includes the Jamendo radio stations in the default ini. My favorite
-places to look for good radio stations are:
-
-* [Listen Live](http://www.listenlive.eu/)
-* [Radionomy](http://www.radionomy.com/en)
-* [The Icecast Directory](http://dir.xiph.org/)
 
 ### Status
 
