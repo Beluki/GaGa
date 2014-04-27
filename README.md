@@ -42,7 +42,7 @@ Soundtrack = http://streaming.radionomy.com/JamSoundtrack
 World = http://streaming.radionomy.com/JamWorld
 ```
 
-It is possible to create arbitrarily nested submenus, by using a separator
+It is possible to create arbitrarily nested submenus using a separator
 in the section name. Here is another example:
 
 ```ini
