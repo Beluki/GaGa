@@ -63,7 +63,7 @@ error details (including exact line) on any error. In the worst-case
 scenario, if you delete your streams.ini file, GaGa will recreate it
 with a list of default radio streams.
 
-Performance-wise, streams file realoading is usually instant or takes
+Performance-wise, streams file reloading is usually instant or takes
 milliseconds, even with hundreds of radio stations defined.
 
 ### Compiling and installation
