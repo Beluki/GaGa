@@ -88,6 +88,15 @@ The streams file encoding is UTF-8 with or without a BOM signature. Notepad
 will work, although I suggest something better such as [Notepad2][] or
 [Sublime Text][].
 
+### Where to find radio stations
+
+GaGa only includes the Jamendo radio stations in the default ini. My favorite
+places to look for good radio stations are:
+
+* [Listen Live](http://www.listenlive.eu/)
+* [Radionomy](http://www.radionomy.com/en)
+* [The Icecast Directory](http://dir.xiph.org/)
+
 ### Status
 
 There are no known bugs in GaGa. I may still add new features. Nice things
