@@ -72,7 +72,7 @@ Building GaGa is a matter of opening the included Visual Studio 2013
 solution and clicking the build button (or using msbuild). The source code
 has no dependencies other than the [.NET Framework][] 4.0+.
 
-I'll provide prebuilt binaries if there are requests.
+I'll provide prebuilt binaries if there are requests (use the [Issues][] tab).
 
 GaGa doesn't need to be installed. It can run from any folder and doesn't
 write to the Windows registry. It's possible to run it from an usb stick
@@ -84,7 +84,9 @@ GaGa is tested on Windows 7 and 8, using the .NET Framework 4.0+. [Mono][]
 is not supported, because it doesn't implement MediaPlayer (in PresentationCore)
 which GaGa uses for playback.
 
-The streams file encoding is UTF-8 with or without a BOM signature.
+The streams file encoding is UTF-8 with or without a BOM signature. Notepad
+will work, although I suggest something better such as [Notepad2][] or
+[Sublime Text][].
 
 ### Status
 
@@ -100,7 +102,10 @@ folder for more information. No warranty though.
 
 [Documentation]: https://github.com/Beluki/GaGa/tree/master/Documentation
 
+[Issues]: https://github.com/Beluki/GaGa/issues
 [Mono]: http://mono-project.com
+[Notepad2]: http://www.flos-freeware.ch/notepad2.html
 [.NET Framework]: http://www.microsoft.com/en-us/download/details.aspx?id=30653
 [RadioTray]: http://radiotray.sourceforge.net
+[Sublime Text]: http://www.sublimetext.com/
 
