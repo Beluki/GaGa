@@ -25,7 +25,7 @@ default editor for the .ini extension.
 Here is an example. The "Jamendo" submenu in the screenshot above looks
 like this in the default streams file:
 
-```
+```ini
 [Jamendo]
 Best Of Jamendo = http://streaming.radionomy.com/JamBestOf
 Classical = http://streaming.radionomy.com/JamClassical
