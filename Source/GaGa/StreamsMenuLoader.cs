@@ -61,8 +61,8 @@ namespace GaGa
         /// <param name="onClick">Click event to attach to menu items.</param>
         public void LoadTo(ContextMenu menu, EventHandler onClick)
         {
-            // reset first, so that any unhandled exception during recreation
-            // or reading invalidates the current time:
+            // reset first, so that unhandled exceptions during recreation
+            // or reading invalidate the current time:
             lastUpdated = null;
 
             file.RecreateUnlessExists();
@@ -72,8 +72,7 @@ namespace GaGa
             //
             // RecreateUnlessExists() didn't raise an exception
             // but the file was deleted before calling GetLastWriteTime()
-            // In that case, raise an exception now, don't store
-            // an invalid date.
+            // Raise an exception now, don't store an invalid date.
 
             if (lastWriteTime.ToFileTimeUtc() == Utils.FileNotFoundUtc)
                 throw new IOException("Streams file deleted after creating it.");

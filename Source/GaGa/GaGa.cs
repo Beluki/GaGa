@@ -91,7 +91,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// On read errors add a clickable error item and disable editing.
+        /// On read errors add a clickable error item.
         /// The item contains the raised exception in the .Tag property.
         /// </summary>
         /// <param name="exception">
@@ -107,7 +107,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// On open errors add a clickable error item and enable editing.
+        /// On open errors add a clickable error item and disable editing.
         /// The item contains the raised exception in the .Tag property.
         /// </summary>
         /// <param name="exception">
@@ -233,7 +233,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Edit item, open the streams file.
+        /// Edit clicked, open the streams file.
         /// </summary>
         private void OnEditItemClick(Object sender, EventArgs e)
         {
@@ -241,7 +241,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Exit item, hide icon and exit.
+        /// Exit clicked, stop playing, hide icon and exit.
         /// </summary>
         private void OnExitItemClick(Object sender, EventArgs e)
         {

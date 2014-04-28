@@ -150,7 +150,7 @@ namespace GaGa
 
         /// <summary>
         /// Add key=value pairs as clickable menu items.
-        /// The player stream is stored in the item .Tag property.
+        /// The uri is stored in the item .Tag property.
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
