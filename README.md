@@ -8,7 +8,8 @@ screenshot:
 ![Screenshot1](https://raw.github.com/Beluki/GaGa/master/Screenshot/Screenshot1.png)
 
 Left click on the icon toggles play/stop. Middle click (with the mouse wheel)
-toggles mute. Right click opens the menu with a list of streams.
+toggles mute. Right click opens the menu with a list of streams. The icon
+reflects the current state (e.g. an animation while buffering).
 
 On a modern system, GaGa typically uses about 12 MB of ram and 1% CPU while
 playing. It supports .m3u, .asx, .mp3 and basically everything that Windows
@@ -22,24 +23,17 @@ one by one in a GUI, GaGa uses an INI file. This file is automatically
 reloaded on changes and clicking "Edit streams file" opens it in your
 default editor for the .ini extension.
 
-Here is an example. The "Jamendo" submenu in the screenshot above looks
-like this in the default streams file:
+Here is an example. The "Radio Reddit" submenu in the screenshot above looks
+like this in streams file:
 
 ```ini
-[Jamendo]
-Best Of Jamendo = http://streaming.radionomy.com/JamBestOf
-Classical = http://streaming.radionomy.com/JamClassical
-Electronic = http://streaming.radionomy.com/JamElectro
-Hip Hop = http://streaming.radionomy.com/JamHipHop
-Jazz = http://streaming.radionomy.com/JamJazz
-Lounge = http://streaming.radionomy.com/JamLounge
-Metal = http://streaming.radionomy.com/JamMetal
-Pop = http://streaming.radionomy.com/JamPop
-Relaxation = http://streaming.radionomy.com/JamRelaxation
-Rock = http://streaming.radionomy.com/JamRock
-Songwriting = http://streaming.radionomy.com/JamSongwriting
-Soundtrack = http://streaming.radionomy.com/JamSoundtrack
-World = http://streaming.radionomy.com/JamWorld
+[Radio Reddit]
+Main = http://radioreddit.com/listen/main/listen.asx
+Electronic = http://radioreddit.com/listen/electronic/listen.asx
+Indie = http://radioreddit.com/listen/indie/listen.asx
+Hiphop = http://radioreddit.com/listen/hiphop/listen.asx
+Metal = http://radioreddit.com/listen/metal/listen.asx
+Rock = http://radioreddit.com/listen/rock/listen.asx
 ```
 
 It is possible to create arbitrarily nested submenus using a separator
@@ -72,7 +66,7 @@ Building GaGa is a matter of opening the included Visual Studio 2013
 solution and clicking the build button (or using msbuild). The source code
 has no dependencies other than the [.NET Framework][] 4.0+.
 
-I'll provide prebuilt binaries if there are requests (use the [Issues][] tab).
+I'll provide binaries if there are requests (use the [Issues][] tab).
 
 GaGa doesn't need to be installed. It can run from any folder and doesn't
 write to the Windows registry. It's possible to run it from an usb stick
@@ -100,9 +94,9 @@ will work, although I suggest something better such as [Notepad2][] or
 ### Status
 
 There are no known bugs in GaGa. I may still add new features. Nice things
-to have would be .pls format support and global hotkeys (using multimedia
-keys on keyboards that have them). Contributions and ideas are welcome, as
-are bug reports.
+to have would be .pls format support, being able to change the streams file
+location and global hotkeys (using multimedia keys). Contributions and ideas
+are welcome, as are bug reports.
 
 ### License
 
