@@ -28,7 +28,7 @@ like this in streams file:
 
 ```ini
 [Radio Reddit]
-Main = http://radioreddit.com/listen/main/listen.asx
+Main = http://radioreddit.com/listen/listen.asx
 Electronic = http://radioreddit.com/listen/electronic/listen.asx
 Indie = http://radioreddit.com/listen/indie/listen.asx
 Hiphop = http://radioreddit.com/listen/hiphop/listen.asx
