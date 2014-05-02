@@ -24,7 +24,7 @@ reloaded on changes and clicking "Edit streams file" opens it in your
 default editor for the .ini extension.
 
 Here is an example. The "Radio Reddit" submenu in the screenshot above looks
-like this in streams file:
+like this in the streams file:
 
 ```ini
 [Radio Reddit]
