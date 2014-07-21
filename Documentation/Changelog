@@ -1,6 +1,11 @@
 
 CHANGELOG
 
+* 2014/07/21:
+
+    - Revised. Working on MSVC 2014 CTP.
+      No changes needed.
+
 * 2014/04/27:
 
     - First complete version.
