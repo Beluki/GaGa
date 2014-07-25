@@ -28,12 +28,12 @@ like this in the streams file:
 
 ```ini
 [Radio Reddit]
-Main = http://radioreddit.com/listen/listen.asx
-Electronic = http://radioreddit.com/listen/electronic/listen.asx
-Indie = http://radioreddit.com/listen/indie/listen.asx
-Hiphop = http://radioreddit.com/listen/hiphop/listen.asx
-Metal = http://radioreddit.com/listen/metal/listen.asx
-Rock = http://radioreddit.com/listen/rock/listen.asx
+Main = http://cdn.audiopump.co/radioreddit/main_mp3_128k
+Electronic = http://cdn.audiopump.co/radioreddit/electronic_mp3_128k
+Indie = http://cdn.audiopump.co/radioreddit/indie_mp3_128k
+Hiphop = http://cdn.audiopump.co/radioreddit/hiphop_mp3_128k
+Metal = http://cdn.audiopump.co/radioreddit/metal_mp3_128k
+Rock = http://cdn.audiopump.co/radioreddit/rock_mp3_128k
 ```
 
 It is possible to create arbitrarily nested submenus using a separator
@@ -44,7 +44,7 @@ in the section name. Here is another example:
 Kohina = http://kohina.radio.ethz.ch/kohina.mp3
 
 [Video Games]
-A.I. Radio = http://dir.xiph.org/listen/483984/listen.m3u
+A.I. Radio = http://ai-radio.org/radio.mp3.m3u
 NoLife = http://nolife-radio.com/radio/NoLife-radio.m3u
 ```
 
@@ -66,7 +66,7 @@ Building GaGa is a matter of opening the included Visual Studio 2013
 solution and clicking the build button (or using msbuild). The source code
 has no dependencies other than the [.NET Framework][] 4.0+.
 
-I'll provide binaries if there are requests (use the [Issues][] tab).
+There are binaries for the latest version in the [Releases][] tab above.
 
 GaGa doesn't need to be installed. It can run from any folder and doesn't
 write to the Windows registry. It's possible to run it from an usb stick
@@ -104,8 +104,8 @@ Like all my hobby projects, this is Free Software. See the [Documentation][]
 folder for more information. No warranty though.
 
 [Documentation]: https://github.com/Beluki/GaGa/tree/master/Documentation
+[Releases]: https://github.com/Beluki/GaGa/releases
 
-[Issues]: https://github.com/Beluki/GaGa/issues
 [Mono]: http://mono-project.com
 [Notepad2]: http://www.flos-freeware.ch/notepad2.html
 [.NET Framework]: http://www.microsoft.com/en-us/download/details.aspx?id=30653
