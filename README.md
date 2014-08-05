@@ -95,8 +95,8 @@ will work, although I suggest something better such as [Notepad2][] or
 
 There are no known bugs in GaGa. I may still add new features. Nice things
 to have would be .pls format support, being able to change the streams file
-location and global hotkeys (using multimedia keys). Contributions and ideas
-are welcome, as are bug reports.
+location (or support per-user files) and global hotkeys (using multimedia keys).
+Contributions and ideas are welcome, as are bug reports.
 
 ## License
 
