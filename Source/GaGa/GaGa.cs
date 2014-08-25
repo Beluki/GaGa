@@ -64,11 +64,11 @@ namespace GaGa
             // volume items:
             var volumeItems = new MenuItem[]
             {
-                new MenuItem("10%", OnChangeVolumeClick),
-                new MenuItem("25%", OnChangeVolumeClick),
-                new MenuItem("50%", OnChangeVolumeClick),
-                new MenuItem("75%", OnChangeVolumeClick),
-                new MenuItem("100%", OnChangeVolumeClick)
+                new MenuItem("10%", (sender, args) => player.ChangeVolume(0.1)),
+                new MenuItem("25%", (sender, args) => player.ChangeVolume(0.25)),
+                new MenuItem("50%", (sender, args) => player.ChangeVolume(0.50)),
+                new MenuItem("75%", (sender, args) => player.ChangeVolume(0.75)),
+                new MenuItem("100%", (sender, args) => player.ChangeVolume(1.0))
             };
             volumeItem = new MenuItem("Change Volume", volumeItems);
 
@@ -264,17 +264,6 @@ namespace GaGa
             Application.Exit();
         }
 
-        /// <summary>
-        /// Change Volume Clicked, 
-        /// </summary>
-        private void OnChangeVolumeClick(object sender, EventArgs eventArgs)
-        {
-            // HACK: Get rid of the percentage sign, use the Lambda Expression instead
-            MenuItem item = (MenuItem)sender;
-            string text = item.Text.Substring(0, item.Text.Length - 1);
-            double amount = double.Parse(text) / 100;
-            player.ChangeVolume(amount);
-        }
     }
 }
 
