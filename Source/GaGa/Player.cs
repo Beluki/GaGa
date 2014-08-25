@@ -18,7 +18,18 @@ namespace GaGa
         private readonly MediaPlayer player;
 
         private PlayerStream source;
-        private Boolean isIdle;
+        private bool IsIdle { get; set; }
+        private bool IsMuted
+        {
+            get { return player.IsMuted; }
+            set { player.IsMuted = value; }
+        }
+
+        private double Volume
+        {
+            get { return player.Volume; }
+            set { player.Volume = Utils.Clamp(value, 0, 1); }
+        }
 
         private readonly Icon idleIcon;
         private readonly Icon playingIcon;
@@ -48,7 +59,7 @@ namespace GaGa
             player.MediaFailed += OnMediaFailed;
 
             source = null;
-            isIdle = true;
+            IsIdle = true;
 
             idleIcon = Utils.ResourceAsIcon("GaGa.Resources.idle.ico");
             playingIcon = Utils.ResourceAsIcon("GaGa.Resources.playing.ico");
@@ -82,29 +93,28 @@ namespace GaGa
         {
             Icon icon;
             String text;
+            const string separator = " | ";
 
             // player state:
-            if (isIdle)
+            if (IsIdle)
             {
                 icon = idleIcon;
                 text = "Idle";
             }
+            else if (IsMuted)
+            {
+                icon = playingMutedIcon;
+                text = "Playing (muted)";
+            }
             else
             {
-                if (player.IsMuted)
-                {
-                    icon = playingMutedIcon;
-                    text = "Playing (muted)";
-                }
-                else
-                {
-                    icon = playingIcon;
-                    text = "Playing";
-                }
+                icon = playingIcon;
+                text = "Playing";
             }
 
+
             // separator:
-            text += " - ";
+            text += separator;
 
             // source state:
             if (source != null)
@@ -116,6 +126,11 @@ namespace GaGa
                 text += "No stream selected";
             }
 
+
+            // Volume:
+            text += separator + Volume.ToString("P0");
+
+
             notifyIcon.Icon = icon;
             notifyIcon.SetToolTipText(text);
         }
@@ -126,7 +141,7 @@ namespace GaGa
         private void bufferingIconTimer_Tick(Object sender, EventArgs e)
         {
             // the mute icon has priority over the buffering icons:
-            if (!player.IsMuted)
+            if (IsMuted)
                 notifyIcon.Icon = bufferingIcons[currentBufferingIcon];
 
             currentBufferingIcon++;
@@ -146,9 +161,8 @@ namespace GaGa
         {
             player.Open(source.Uri);
             player.Play();
-            player.IsMuted = false;
-
-            isIdle = false;
+            IsMuted = false;
+            IsIdle = false;
             UpdateIcon();
         }
 
@@ -157,13 +171,19 @@ namespace GaGa
         /// </summary>
         private void StopPlaying()
         {
+            // HACK: This fixes the behaviour that when the player is closed reopened that the player starts with the default volume
+            // TODO: Implement Volume Information into the config file
+            double lastVolume = Volume;
+
             player.Stop();
             player.Close();
+
+            Volume = lastVolume;
 
             bufferingIconTimer.Stop();
             currentBufferingIcon = 0;
 
-            isIdle = true;
+            IsIdle = true;
             UpdateIcon();
         }
 
@@ -172,7 +192,7 @@ namespace GaGa
         /// </summary>
         private void TogglePlay()
         {
-            if (isIdle)
+            if (IsIdle)
             {
                 StartPlaying();
             }
@@ -187,7 +207,7 @@ namespace GaGa
         /// </summary>
         private void ToggleMute()
         {
-            player.IsMuted = !player.IsMuted;
+            IsMuted = !IsMuted;
             UpdateIcon();
         }
 
@@ -257,6 +277,16 @@ namespace GaGa
         }
 
         /// <summary>
+        /// The new Volume to set
+        /// </summary>
+        /// <param name="amount">the amount needs to be beetwen 0.0 and 1.0</param>
+        public void ChangeVolume(double amount)
+        {
+            Volume = amount;
+            UpdateIcon();
+        }
+
+        /// <summary>
         /// Toggle play with the left mouse button.
         /// When no stream has been selected, show the context menu instead.
         /// </summary>
@@ -278,7 +308,7 @@ namespace GaGa
         /// </summary>
         private void OnMiddleMouseClick()
         {
-            if (isIdle)
+            if (IsIdle)
             {
                 notifyIcon.InvokeContextMenu();
             }
@@ -309,6 +339,7 @@ namespace GaGa
                     break;
             }
         }
+
     }
 }
 
