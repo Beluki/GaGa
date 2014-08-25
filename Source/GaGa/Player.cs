@@ -171,8 +171,14 @@ namespace GaGa
         /// </summary>
         private void StopPlaying()
         {
+            // HACK: This fixes the behaviour that when the player is closed reopened that the player starts with the default volume
+            // TODO: Implement Volume Information into the config file
+            double lastVolume = Volume;
+
             player.Stop();
             player.Close();
+
+            Volume = lastVolume;
 
             bufferingIconTimer.Stop();
             currentBufferingIcon = 0;
