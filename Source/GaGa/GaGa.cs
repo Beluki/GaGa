@@ -28,6 +28,7 @@ namespace GaGa
         // constant items:
         private readonly MenuItem editItem;
         private readonly MenuItem exitItem;
+        private readonly MenuItem volumeItem;
 
         // playing:
         private readonly Player player;
@@ -60,9 +61,21 @@ namespace GaGa
             editItem = new MenuItem("Edit streams file", OnEditItemClick);
             exitItem = new MenuItem("Exit", OnExitItemClick);
 
+            // volume items:
+            var volumeItems = new MenuItem[]
+            {
+                new MenuItem("10%", (sender, args) => player.ChangeVolume(0.1)),
+                new MenuItem("25%", (sender, args) => player.ChangeVolume(0.25)),
+                new MenuItem("50%", (sender, args) => player.ChangeVolume(0.50)),
+                new MenuItem("75%", (sender, args) => player.ChangeVolume(0.75)),
+                new MenuItem("100%", (sender, args) => player.ChangeVolume(1.0))
+            };
+            volumeItem = new MenuItem("Change Volume", volumeItems);
+
             // playing:
             player = new Player(notifyIcon);
         }
+
 
         ///
         /// Reloading the menu.
@@ -143,6 +156,7 @@ namespace GaGa
 
             menu.MenuItems.Add("-");
             menu.MenuItems.Add(editItem);
+            menu.MenuItems.Add(volumeItem);
             menu.MenuItems.Add(exitItem);
         }
 
@@ -188,8 +202,8 @@ namespace GaGa
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem) sender;
-            PlayerStream stream = new PlayerStream(item.Text, (Uri) item.Tag);
+            MenuItem item = (MenuItem)sender;
+            PlayerStream stream = new PlayerStream(item.Text, (Uri)item.Tag);
             player.Play(stream);
         }
 
@@ -198,8 +212,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorOpenItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem) sender;
-            Exception exception = (Exception) item.Tag;
+            MenuItem item = (MenuItem)sender;
+            Exception exception = (Exception)item.Tag;
 
             String text = exception.Message;
             String caption = "Error opening streams file";
@@ -211,8 +225,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorReadItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem) sender;
-            StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
+            MenuItem item = (MenuItem)sender;
+            StreamsFileReadError exception = (StreamsFileReadError)item.Tag;
 
             String text = String.Format(
                 "{0} \n" +
@@ -249,6 +263,7 @@ namespace GaGa
             notifyIcon.Visible = false;
             Application.Exit();
         }
+
     }
 }
 
