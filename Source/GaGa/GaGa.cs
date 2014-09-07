@@ -5,196 +5,251 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
+
+using GaGa.Controls;
 
 
 namespace GaGa
 {
     internal class GaGa : ApplicationContext
     {
-        // streams file and loader:
-        private readonly StreamsFile streamsFile;
-        private readonly StreamsMenuLoader menuLoader;
-
         // gui components:
         private readonly Container container;
         private readonly NotifyIcon notifyIcon;
-        private ContextMenu menu;
+        private readonly ContextMenuStrip menu;
 
-        // error items:
-        private readonly MenuItem errorOpenItem;
-        private readonly MenuItem errorReadItem;
+        // streams menu:
+        private readonly String streamsFilepath;
+        private readonly StreamsFileLoader streamsFileLoader;
 
-        // constant items:
-        private readonly MenuItem editItem;
-        private readonly MenuItem exitItem;
-        private readonly MenuItem volumeItem;
+        // streams menu constant items:
+        private readonly ToolStripMenuItem errorOpenItem;
+        private readonly ToolStripMenuItem errorReadItem;
+        private readonly ToolStripMenuItem editItem;
 
-        // playing:
+        // audio settings:
+        private readonly ToolStripMenuItem audioSettingsItem;
+        private readonly Label balanceLabel;
+        private readonly TrackBar balanceTrackBar;
+        private readonly Label volumeLabel;
+        private readonly TrackBar volumeTrackBar;
+
+        // other menu items:
+        private readonly ToolStripMenuItem exitItem;
+
+        // player:
         private readonly Player player;
 
         /// <summary>
         /// GaGa implementation.
         /// </summary>
-        /// <param name="streamsFilePath">
-        /// Path for the streams file to use.
-        /// </param>
-        public GaGa(String streamsFilePath)
+        /// <param name="filepath">Path to the streams file to use.</param>
+        public GaGa(String filepath)
         {
-            // streams file and loader:
-            streamsFile = new StreamsFile(streamsFilePath, "GaGa.Resources.streams.ini");
-            menuLoader = new StreamsMenuLoader(streamsFile);
-
             // gui components:
             container = new Container();
 
             notifyIcon = new NotifyIcon(container);
+            notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+            notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
+            notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
             notifyIcon.Visible = true;
 
-            MenuRecreate();
+            menu = notifyIcon.ContextMenuStrip;
 
-            // error items:
-            errorOpenItem = new MenuItem("Error opening streams file (click for details)", OnErrorOpenItemClick);
-            errorReadItem = new MenuItem("Error reading streams file (click for details)", OnErrorReadItemClick);
+            // streams menu:
+            streamsFilepath = filepath;
+            streamsFileLoader = new StreamsFileLoader(filepath, "GaGa.Resources.streams.ini");
 
-            // constant items:
-            editItem = new MenuItem("Edit streams file", OnEditItemClick);
-            exitItem = new MenuItem("Exit", OnExitItemClick);
+            // streams menu constant items:
+            errorOpenItem = new ToolStripMenuItem();
+            errorOpenItem.Text = "Error opening streams file";
+            errorOpenItem.Click += OnErrorOpenItemClick;
+            errorOpenItem.ToolTipText = "Click for details";
 
-            // volume items:
-            var volumeItems = new MenuItem[]
+            errorReadItem = new ToolStripMenuItem();
+            errorReadItem.Text = "Error reading streams file";
+            errorReadItem.Click += OnErrorReadItemClick;
+            errorReadItem.ToolTipText = "Click for details";
+
+            editItem = new ToolStripMenuItem();
+            editItem.Text = "Edit streams file";
+            editItem.Click += OnEditItemClick;
+            editItem.ToolTipText = "Open the streams file in your default editor";
+
+            // audio settings:
+            audioSettingsItem = new ToolStripMenuItem();
+            audioSettingsItem.Text = "Audio settings";
+
+            MyToolStripLabel balanceStripLabel = new MyToolStripLabel();
+            MyToolStripTrackBar balanceStripTrackBar = new MyToolStripTrackBar();
+            MyToolStripLabel volumeStripLabel = new MyToolStripLabel();
+            MyToolStripTrackBar volumeStripTrackBar = new MyToolStripTrackBar();
+
+            balanceLabel = balanceStripLabel.Label;
+            balanceLabel.Text = "Balance";
+
+            balanceTrackBar = balanceStripTrackBar.TrackBar;
+            balanceTrackBar.Minimum = -10;
+            balanceTrackBar.Maximum = 10;
+            balanceTrackBar.Value = 0;
+            balanceTrackBar.ValueChanged += OnBalanceTrackBarChanged;
+
+            volumeLabel = volumeStripLabel.Label;
+            volumeLabel.Text = "Volume";
+
+            volumeTrackBar = volumeStripTrackBar.TrackBar;
+            volumeTrackBar.Minimum = 0;
+            volumeTrackBar.Maximum = 20;
+            volumeTrackBar.Value = 10;
+            volumeTrackBar.ValueChanged += OnVolumeTrackBarChanged;
+
+            // change back color depending on the current renderer:
+            if (menu.Renderer is ToolStripProfessionalRenderer)
             {
-                new MenuItem("10%", (sender, args) => player.ChangeVolume(0.1)),
-                new MenuItem("25%", (sender, args) => player.ChangeVolume(0.25)),
-                new MenuItem("50%", (sender, args) => player.ChangeVolume(0.50)),
-                new MenuItem("75%", (sender, args) => player.ChangeVolume(0.75)),
-                new MenuItem("100%", (sender, args) => player.ChangeVolume(1.0))
-            };
-            volumeItem = new MenuItem("Change Volume", volumeItems);
+                ProfessionalColorTable colors = new ProfessionalColorTable();
+                Color back = colors.ToolStripDropDownBackground;
 
-            // playing:
+                balanceLabel.BackColor = back;
+                balanceTrackBar.BackColor = back;
+                volumeLabel.BackColor = back;
+                volumeTrackBar.BackColor = back;
+            }
+
+            audioSettingsItem.DropDownItems.Add(balanceStripLabel);
+            audioSettingsItem.DropDownItems.Add(balanceStripTrackBar);
+            audioSettingsItem.DropDownItems.Add(volumeStripLabel);
+            audioSettingsItem.DropDownItems.Add(volumeStripTrackBar);
+
+            // other items:
+            exitItem = new ToolStripMenuItem();
+            exitItem.Text = "Exit";
+            exitItem.Click += OnExitItemClick;
+            exitItem.ToolTipText = "Exit GaGa";
+
+            // player:
             player = new Player(notifyIcon);
-        }
 
-
-        ///
-        /// Reloading the menu.
-        ///
-
-        /// <summary>
-        /// Clear the menu by deleting it and creating a new one from scratch.
-        /// Avoids the problem of context menus caching their width.
-        /// </summary>
-        private void MenuRecreate()
-        {
-            menu = new ContextMenu();
-            menu.Popup += OnMenuPopup;
-
-            notifyIcon.ContextMenu = menu;
-        }
-
-        /// <summary>
-        /// Re-create the context menu from the menuloader items.
-        /// </summary>
-        private void MenuReload()
-        {
-            MenuRecreate();
-            menuLoader.LoadTo(menu, OnStreamItemClick);
-            editItem.Enabled = true;
-        }
-
-        /// <summary>
-        /// On read errors add a clickable error item.
-        /// The item contains the raised exception in the .Tag property.
-        /// </summary>
-        /// <param name="exception">
-        /// Error that happened when trying to read the streams file.
-        /// </param>
-        private void MenuLoadErrorRead(StreamsFileReadError exception)
-        {
-            MenuRecreate();
-            menu.MenuItems.Add(errorReadItem);
-
-            errorReadItem.Tag = exception;
-            editItem.Enabled = true;
-        }
-
-        /// <summary>
-        /// On open errors add a clickable error item and disable editing.
-        /// The item contains the raised exception in the .Tag property.
-        /// </summary>
-        /// <param name="exception">
-        /// Error that happened when trying to open the streams file.
-        /// </param>
-        private void MenuLoadErrorOpen(Exception exception)
-        {
-            MenuRecreate();
-            menu.MenuItems.Add(errorOpenItem);
-
-            errorOpenItem.Tag = exception;
-            editItem.Enabled = false;
-        }
-
-        /// <summary>
-        /// Recreate the context menu.
-        /// Create alternate menus on errors.
-        /// </summary>
-        private void MenuUpdate()
-        {
-            try
-            {
-                MenuReload();
-            }
-            catch (StreamsFileReadError exception)
-            {
-                MenuLoadErrorRead(exception);
-            }
-            catch (Exception exception)
-            {
-                MenuLoadErrorOpen(exception);
-            }
-
-            menu.MenuItems.Add("-");
-            menu.MenuItems.Add(editItem);
-            menu.MenuItems.Add(volumeItem);
-            menu.MenuItems.Add(exitItem);
-        }
-
-        /// <summary>
-        /// When the menu is about to be opened, reload first if needed.
-        /// </summary>
-        private void OnMenuPopup(Object sender, EventArgs e)
-        {
-            if (menuLoader.MustReload)
-            {
-                MenuUpdate();
-            }
+            // update audio settings:
+            BalanceUpdate();
+            VolumeUpdate();
         }
 
         ///
-        /// Streams file actions.
+        /// Helpers
         ///
 
         /// <summary>
         /// Open the streams file with the default program
         /// associated to the extension.
         /// </summary>
-        private void StreamsFileEdit()
+        private void StreamsFileOpen()
         {
             try
             {
-                streamsFile.Run();
+                Process.Start(streamsFilepath);
             }
             catch (Exception exception)
             {
                 String text = exception.Message;
-                String caption = "Error running streams file";
+                String caption = "Error openning streams file";
                 MessageBox.Show(text, caption);
             }
         }
 
         ///
-        /// Clicking on menu items.
+        /// Reloading the context menu
+        ///
+
+        /// <summary>
+        /// Reload the context menu.
+        /// </summary>
+        private void MenuUpdate()
+        {
+            try
+            {
+                menu.Items.Clear();
+                streamsFileLoader.LoadTo(menu, OnStreamItemClick);
+                editItem.Enabled = true;
+            }
+            catch (StreamsFileReadError exception)
+            {
+                menu.Items.Clear();
+                menu.Items.Add(errorReadItem);
+                errorReadItem.Tag = exception;
+                editItem.Enabled = true;
+            }
+            catch (Exception exception)
+            {
+                menu.Items.Clear();
+                menu.Items.Add(errorOpenItem);
+                errorOpenItem.Tag = exception;
+                editItem.Enabled = false;
+            }
+
+            menu.Items.Add(editItem);
+            menu.Items.Add("-");
+            menu.Items.Add(audioSettingsItem);
+            menu.Items.Add(exitItem);
+        }
+
+        /// <summary>
+        /// When the menu is about to be opened, reload first if needed.
+        /// </summary>
+        private void OnMenuOpening(Object sender, CancelEventArgs e)
+        {
+            if (streamsFileLoader.MustReload())
+            {
+                menu.SuspendLayout();
+                MenuUpdate();
+                menu.ResumeLayout();
+            }
+
+            e.Cancel = false;
+            notifyIcon.InvokeContextMenu();
+        }
+
+        ///
+        /// Balance and volume updating
+        ///
+
+        /// <summary>
+        /// Update the balance label and trackbar
+        /// and send the current value to the player.
+        /// </summary>
+        private void BalanceUpdate()
+        {
+            Double current = (Double) balanceTrackBar.Value;
+            Double maximum = balanceTrackBar.Maximum;
+
+            Double balance = current / maximum;
+            Double percent = balance * 100;
+
+            balanceLabel.Text = "Balance  " + percent.ToString();
+            player.SetBalance(balance);
+        }
+
+        /// <summary>
+        /// Update the volume label and trackbar
+        /// and send the current value to the player.
+        /// </summary>
+        private void VolumeUpdate()
+        {
+            Double current = (Double) volumeTrackBar.Value;
+            Double maximum = volumeTrackBar.Maximum;
+
+            Double volume = current / maximum;
+            Double percent = volume * 100;
+
+            volumeLabel.Text = "Volume  " + percent.ToString();
+            player.SetVolume(volume);
+        }
+
+        ///
+        /// Events
         ///
 
         /// <summary>
@@ -202,8 +257,9 @@ namespace GaGa
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
-            PlayerStream stream = new PlayerStream(item.Text, (Uri)item.Tag);
+            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+
+            PlayerStream stream = new PlayerStream(item.Text, (Uri) item.Tag);
             player.Play(stream);
         }
 
@@ -212,8 +268,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorOpenItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
-            Exception exception = (Exception)item.Tag;
+            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+            Exception exception = (Exception) item.Tag;
 
             String text = exception.Message;
             String caption = "Error opening streams file";
@@ -225,24 +281,24 @@ namespace GaGa
         /// </summary>
         private void OnErrorReadItemClick(Object sender, EventArgs e)
         {
-            MenuItem item = (MenuItem)sender;
-            StreamsFileReadError exception = (StreamsFileReadError)item.Tag;
+            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+            StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
 
             String text = String.Format(
                 "{0} \n" +
                 "Error at line {1}: {2} \n\n" +
                 "{3} \n\n" +
-                "Do you want to edit the streams file now?",
-                exception.File.FilePath,
+                "Do you want to open the streams file now?",
+                exception.FilePath,
                 exception.LineNumber,
                 exception.Message,
                 exception.Line
             );
 
             String caption = "Error reading streams file";
-            if (Utils.MessageBoxYesNo(text, caption))
+            if (Util.MessageBoxYesNo(text, caption))
             {
-                StreamsFileEdit();
+                StreamsFileOpen();
             }
         }
 
@@ -251,7 +307,24 @@ namespace GaGa
         /// </summary>
         private void OnEditItemClick(Object sender, EventArgs e)
         {
-            StreamsFileEdit();
+            StreamsFileOpen();
+        }
+
+
+        /// <summary>
+        /// Balance changed.
+        /// </summary>
+        private void OnBalanceTrackBarChanged(Object sender, EventArgs e)
+        {
+            BalanceUpdate();
+        }
+
+        /// <summary>
+        /// Volume changed.
+        /// </summary>
+        private void OnVolumeTrackBarChanged(Object sender, EventArgs e)
+        {
+            VolumeUpdate();
         }
 
         /// <summary>
@@ -263,7 +336,6 @@ namespace GaGa
             notifyIcon.Visible = false;
             Application.Exit();
         }
-
     }
 }
 

@@ -16,7 +16,7 @@ namespace GaGa
         public readonly String Name;
 
         /// <summary>
-        /// Streaming uri.
+        /// Streaming URI.
         /// </summary>
         public readonly Uri Uri;
 
@@ -24,7 +24,7 @@ namespace GaGa
         /// Represents a playable media stream.
         /// </summary>
         /// <param name="name">Stream name.</param>
-        /// <param name="uri">Streaming uri.</param>
+        /// <param name="uri">Streaming URI.</param>
         public PlayerStream(String name, Uri uri)
         {
             Name = name;

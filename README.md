@@ -11,7 +11,7 @@ Left click on the icon toggles play/stop. Middle click (with the mouse wheel)
 toggles mute. Right click opens the menu with a list of streams. The icon
 reflects the current state (e.g. an animation while buffering).
 
-On a modern system, GaGa typically uses about 12 MB of ram and 1% CPU while
+On a modern system, GaGa typically uses about 15 MB of ram and 1% CPU while
 playing. It supports .m3u, .asx, .mp3 and basically everything that Windows
 Media Player supports.
 
@@ -40,10 +40,10 @@ It is possible to create arbitrarily nested submenus using a separator
 in the section name. Here is another example:
 
 ```ini
-[Video Games/Oldies]
+[Videogames/Oldies]
 Kohina = http://kohina.radio.ethz.ch/kohina.mp3
 
-[Video Games]
+[Videogames]
 A.I. Radio = http://ai-radio.org/radio.mp3.m3u
 NoLife = http://nolife-radio.com/radio/NoLife-radio.m3u
 ```
@@ -62,7 +62,7 @@ milliseconds, even with hundreds of radio stations defined.
 
 ## Compiling and installation
 
-Building GaGa is a matter of opening the included Visual Studio 2013
+Building GaGa is a matter of opening the included Visual Studio 2010
 solution and clicking the build button (or using msbuild). The source code
 has no dependencies other than the [.NET Framework][] 4.0+.
 

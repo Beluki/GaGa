@@ -18,25 +18,14 @@ namespace GaGa
         private readonly MediaPlayer player;
 
         private PlayerStream source;
-        private bool IsIdle { get; set; }
-        private bool IsMuted
-        {
-            get { return player.IsMuted; }
-            set { player.IsMuted = value; }
-        }
-
-        private double Volume
-        {
-            get { return player.Volume; }
-            set { player.Volume = Utils.Clamp(value, 0, 1); }
-        }
+        private Boolean isIdle;
 
         private readonly Icon idleIcon;
         private readonly Icon playingIcon;
         private readonly Icon playingMutedIcon;
+        private readonly Icon[] bufferingIcons;
 
         private readonly DispatcherTimer bufferingIconTimer;
-        private readonly Icon[] bufferingIcons;
         private Int32 currentBufferingIcon;
 
         /// <summary>
@@ -59,30 +48,29 @@ namespace GaGa
             player.MediaFailed += OnMediaFailed;
 
             source = null;
-            IsIdle = true;
+            isIdle = true;
 
-            idleIcon = Utils.ResourceAsIcon("GaGa.Resources.idle.ico");
-            playingIcon = Utils.ResourceAsIcon("GaGa.Resources.playing.ico");
-            playingMutedIcon = Utils.ResourceAsIcon("GaGa.Resources.playing-muted.ico");
+            idleIcon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
+            playingIcon = Util.ResourceAsIcon("GaGa.Resources.playing.ico");
+            playingMutedIcon = Util.ResourceAsIcon("GaGa.Resources.playing-muted.ico");
 
             bufferingIcons = new Icon[] {
-                Utils.ResourceAsIcon("GaGa.Resources.buffering1.ico"),
-                Utils.ResourceAsIcon("GaGa.Resources.buffering2.ico"),
-                Utils.ResourceAsIcon("GaGa.Resources.buffering3.ico"),
-                Utils.ResourceAsIcon("GaGa.Resources.buffering4.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.buffering1.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.buffering2.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.buffering3.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.buffering4.ico"),
             };
 
             bufferingIconTimer = new DispatcherTimer();
             bufferingIconTimer.Interval = TimeSpan.FromMilliseconds(300);
-            bufferingIconTimer.Tick += bufferingIconTimer_Tick;
-
+            bufferingIconTimer.Tick += OnBufferingIconTimerTick;
             currentBufferingIcon = 0;
 
             UpdateIcon();
         }
 
         ///
-        /// Notify icon and text.
+        /// Icon handling
         ///
 
         /// <summary>
@@ -93,15 +81,14 @@ namespace GaGa
         {
             Icon icon;
             String text;
-            const string separator = " | ";
 
-            // player state:
-            if (IsIdle)
+            // player state
+            if (isIdle)
             {
                 icon = idleIcon;
                 text = "Idle";
             }
-            else if (IsMuted)
+            else if (player.IsMuted)
             {
                 icon = playingMutedIcon;
                 text = "Playing (muted)";
@@ -112,93 +99,124 @@ namespace GaGa
                 text = "Playing";
             }
 
-
             // separator:
-            text += separator;
+            text += " - ";
 
             // source state:
-            if (source != null)
-            {
-                text += source.Name;
-            }
-            else
+            if (source == null)
             {
                 text += "No stream selected";
             }
-
-
-            // Volume:
-            text += separator + Volume.ToString("P0");
-
+            else
+            {
+                text += source.Name;
+            }
 
             notifyIcon.Icon = icon;
             notifyIcon.SetToolTipText(text);
         }
 
-        /// <summary>
-        /// Override the current icon with an animation while buffering.
-        /// </summary>
-        private void bufferingIconTimer_Tick(Object sender, EventArgs e)
-        {
-            // the mute icon has priority over the buffering icons:
-            if (IsMuted)
-                notifyIcon.Icon = bufferingIcons[currentBufferingIcon];
-
-            currentBufferingIcon++;
-            if (currentBufferingIcon == bufferingIcons.Length)
-                currentBufferingIcon = 0;
-        }
-
         ///
-        /// Unsafe private methods.
+        /// Player
         ///
 
         /// <summary>
         /// Open and play the current source stream.
-        /// Unmutes the player if currently muted.
+        /// Unmutes the player.
         /// </summary>
-        private void StartPlaying()
+        public void Play()
         {
+            // do nothing if there is no source:
+            if (source == null)
+                return;
+
             player.Open(source.Uri);
             player.Play();
-            IsMuted = false;
-            IsIdle = false;
+            player.IsMuted = false;
+
+            isIdle = false;
+            UnMute();
             UpdateIcon();
         }
 
         /// <summary>
-        /// Stop playing and close the current source stream.
+        /// Stop playing and close the current stream.
+        /// Unmutes the player.
         /// </summary>
-        private void StopPlaying()
+        public void Stop()
         {
-            // HACK: This fixes the behaviour that when the player is closed reopened that the player starts with the default volume
-            // TODO: Implement Volume Information into the config file
-            double lastVolume = Volume;
+            // do nothing if there is no source or already idle:
+            if ((source == null) || isIdle)
+                return;
+
+            // corner case:
+            // if we only call .Stop(), the player continues downloading
+            // from online streams, but .Close() calls _mediaState.Init()
+            // changing the volume, so save and restore it:
+            Double volume = player.Volume;
 
             player.Stop();
             player.Close();
+            player.IsMuted = false;
 
-            Volume = lastVolume;
+            player.Volume = volume;
 
             bufferingIconTimer.Stop();
             currentBufferingIcon = 0;
 
-            IsIdle = true;
+            isIdle = true;
             UpdateIcon();
         }
 
         /// <summary>
-        /// Toggle between playing/stopped.
+        /// Set a given stream as current and play it.
+        /// Unmutes the player.
         /// </summary>
-        private void TogglePlay()
+        /// <param name="stream">Source stream to play.</param>
+        public void Play(PlayerStream stream)
         {
-            if (IsIdle)
+            source = stream;
+            Play();
+        }
+
+        /// <summary>
+        /// Mute the player.
+        /// </summary>
+        public void Mute()
+        {
+            // do nothing if idle or already muted:
+            if (isIdle || player.IsMuted)
+                return;
+
+            player.IsMuted = true;
+            UpdateIcon();
+        }
+
+        /// <summary>
+        /// Unmute the player.
+        /// </summary>
+        public void UnMute()
+        {
+            // do nothing if idle or not muted:
+            if (isIdle || !player.IsMuted)
+                return;
+
+            player.IsMuted = false;
+            UpdateIcon();
+        }
+
+        /// <summary>
+        /// Toggle between idle/playing.
+        /// </summary>
+        public void TogglePlay()
+        {
+            if (isIdle)
             {
-                StartPlaying();
+                Play();
             }
             else
             {
-                StopPlaying();
+                Stop();
             }
         }
 
@@ -207,12 +225,34 @@ namespace GaGa
         /// </summary>
         private void ToggleMute()
         {
-            IsMuted = !IsMuted;
-            UpdateIcon();
+            if (player.IsMuted)
+            {
+                UnMute();
+            }
+            else
+            {
+                Mute();
+            }
+        }
+
+        /// <summary>
+        /// Change the player balance.
+        /// </summary>
+        public void SetBalance(Double balance)
+        {
+            player.Balance = balance;
+        }
+
+        /// <summary>
+        /// Change the player volume.
+        /// </summary>
+        public void SetVolume(Double volume)
+        {
+            player.Volume = volume;
         }
 
         ///
-        /// Media events.
+        /// Buffering animation
         ///
 
         /// <summary>
@@ -234,11 +274,35 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Override the current icon with an animation while buffering.
+        /// </summary>
+        private void OnBufferingIconTimerTick(Object sender, EventArgs e)
+        {
+            // only change the icon when NOT muted
+            // the mute icon has priority over the buffering icons:
+            if (!player.IsMuted)
+            {
+                notifyIcon.Icon = bufferingIcons[currentBufferingIcon];
+            }
+
+            // but keep the animation always running:
+            currentBufferingIcon++;
+            if (currentBufferingIcon == bufferingIcons.Length)
+            {
+                currentBufferingIcon = 0;
+            }
+        }
+
+        ///
+        /// Media events
+        ///
+
+        /// <summary>
         /// Update state when media ended.
         /// </summary>
         private void OnMediaEnded(Object sender, EventArgs e)
         {
-            StopPlaying();
+            Stop();
         }
 
         /// <summary>
@@ -246,7 +310,7 @@ namespace GaGa
         /// </summary>
         private void OnMediaFailed(Object sender, ExceptionEventArgs e)
         {
-            StopPlaying();
+            Stop();
 
             String title = "Unable to play: " + source.Name;
             String text = e.ErrorException.Message + "\n" + source.Uri;
@@ -255,36 +319,8 @@ namespace GaGa
         }
 
         ///
-        /// Safe external interface/mouse control.
+        /// Mouse control
         ///
-
-        /// <summary>
-        /// Open a stream and start playing it.
-        /// </summary>
-        /// <param name="target">Stream to play.</param>
-        public void Play(PlayerStream stream)
-        {
-            source = stream;
-            StartPlaying();
-        }
-
-        /// <summary>
-        /// Stop playing the current stream.
-        /// </summary>
-        public void Stop()
-        {
-            StopPlaying();
-        }
-
-        /// <summary>
-        /// The new Volume to set
-        /// </summary>
-        /// <param name="amount">the amount needs to be beetwen 0.0 and 1.0</param>
-        public void ChangeVolume(double amount)
-        {
-            Volume = amount;
-            UpdateIcon();
-        }
 
         /// <summary>
         /// Toggle play with the left mouse button.
@@ -304,11 +340,11 @@ namespace GaGa
 
         /// <summary>
         /// Toggle mute with the wheel button.
-        /// When idle, show the context menu instead.
+        /// When not playing, show the context menu instead.
         /// </summary>
         private void OnMiddleMouseClick()
         {
-            if (IsIdle)
+            if (isIdle)
             {
                 notifyIcon.InvokeContextMenu();
             }
@@ -339,7 +375,6 @@ namespace GaGa
                     break;
             }
         }
-
     }
 }
 

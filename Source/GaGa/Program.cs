@@ -20,11 +20,11 @@ namespace GaGa
         {
             // use a "streams.ini" file located in the same folder
             // as the executable for this application:
-            String streamsFilePath = Path.Combine(Utils.ExeFolder, "streams.ini");
+            String filepath = Path.Combine(Util.ExeFolder, "streams.ini");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GaGa(streamsFilePath));
+            Application.Run(new GaGa(filepath));
         }
     }
 }

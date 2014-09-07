@@ -12,38 +12,20 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    internal static class Utils
+    internal static class Util
     {
         ///
-        /// Constants.
+        /// Contants
         ///
 
         /// <summary>
         /// GetLastWriteTime() returns this when a file is not found.
-        ///
-        /// MSDN:
-        /// If the file described in the path parameter does not exist
-        /// this method returns 12:00 midnight, January 1, 1601 A.D. (C.E.)
-        /// Coordinated Universal Time (UTC), adjusted to local time.
         /// </summary>
-        public static readonly Int64 FileNotFoundUtc = new DateTime(1601, 1, 1).ToFileTimeUtc();
+        public static readonly DateTime FileNotFoundUtc = DateTime.FromFileTimeUtc(0);
 
         ///
-        /// Resource files.
+        /// Functions
         ///
-
-        /// <summary>
-        /// Load an embedded resource as an icon.
-        /// </summary>
-        /// <param name="resource">Resource name, including namespace.</param>
-        public static Icon ResourceAsIcon(String resource)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
-            {
-                return new Icon(stream);
-            }
-        }
 
         /// <summary>
         /// Copy an embedded resource to a file.
@@ -62,9 +44,18 @@ namespace GaGa
             }
         }
 
-        ///
-        /// Message boxes.
-        ///
+        /// <summary>
+        /// Load an embedded resource as an icon.
+        /// </summary>
+        /// <param name="resource">Resource name, including namespace.</param>
+        public static Icon ResourceAsIcon(String resource)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(resource))
+            {
+                return new Icon(stream);
+            }
+        }
 
         /// <summary>
         /// Show a MessageBox with Yes and No buttons.
@@ -78,7 +69,7 @@ namespace GaGa
         }
 
         ///
-        /// OS information.
+        /// Properties
         ///
 
         /// <summary>
@@ -91,22 +82,35 @@ namespace GaGa
         }
 
         ///
-        /// Math utils
-        /// 
+        /// Extensions
+        ///
 
         /// <summary>
-        /// Clamps the input value inclusively beetwen min and max
+        /// Safely change the icon tooltip text.
+        /// Strings longer than 63 characters are trimmed to 60 characters
+        /// with a "..." suffix.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="val">input value to clamp</param>
-        /// <param name="min">maximum valid value</param>
-        /// <param name="max">minimum valid value</param>
-        /// <returns></returns>
-        public static T Clamp<T>(T val, T min, T max) where T : IComparable<T>
+        /// <param name="text">Tooltip text to display.</param>
+        public static void SetToolTipText(this NotifyIcon notifyIcon, String text)
         {
-            if (val.CompareTo(min) < 0) { return min; }
-            else if (val.CompareTo(max) > 0) { return max; }
-            else { return val; }
+            if (text.Length > 63)
+            {
+                text = text.Substring(0, 60) + "...";
+            }
+
+            notifyIcon.Text = text;
+        }
+
+        /// <summary>
+        /// Show the context menu for the icon.
+        /// </summary>
+        public static void InvokeContextMenu(this NotifyIcon notifyIcon)
+        {
+            MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
+
+            mi.Invoke(notifyIcon, null);
         }
     }
 }

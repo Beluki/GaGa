@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 using mINI;
@@ -14,12 +15,13 @@ namespace GaGa
 {
     internal class StreamsFileReader : INIReader
     {
-        private StreamsFile file;
-        private ContextMenu menu;
+        private String filepath;
+        private ContextMenuStrip menu;
         private EventHandler onClick;
 
-        private Menu.MenuItemCollection currentMenuItems;
-        private Dictionary<String, MenuItem> seenSubmenues;
+        private List<ToolStripMenuItem> currentMenuItems;
+        private ToolStripItemCollection currentMenuItemCollection;
+        private Dictionary<String, ToolStripMenuItem> seenSubmenues;
 
         private Int32 currentLineNumber;
         private String currentLine;
@@ -31,12 +33,13 @@ namespace GaGa
         /// </summary>
         public StreamsFileReader()
         {
-            file = null;
+            filepath = null;
             menu = null;
             onClick = null;
 
-            currentMenuItems = null;
-            seenSubmenues = new Dictionary<String, MenuItem>();
+            currentMenuItems = new List<ToolStripMenuItem>();
+            currentMenuItemCollection = null;
+            seenSubmenues = new Dictionary<String, ToolStripMenuItem>();
 
             currentLineNumber = 0;
             currentLine = String.Empty;
@@ -47,15 +50,25 @@ namespace GaGa
         /// </summary>
         private void ResetState()
         {
-            file = null;
+            filepath = null;
             menu = null;
             onClick = null;
 
-            currentMenuItems = null;
+            currentMenuItems.Clear();
+            currentMenuItemCollection = null;
             seenSubmenues.Clear();
 
             currentLineNumber = 0;
             currentLine = String.Empty;
+        }
+
+        /// <summary>
+        /// Add the collected items to the current menu.
+        /// </summary>
+        private void AddCurrentMenuItems()
+        {
+            currentMenuItemCollection.AddRange(currentMenuItems.ToArray());
+            currentMenuItems.Clear();
         }
 
         /// <summary>
@@ -66,7 +79,7 @@ namespace GaGa
         {
             throw new StreamsFileReadError(
                 message,
-                file,
+                filepath,
                 currentLine,
                 currentLineNumber
             );
@@ -97,11 +110,11 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Do not accept streams with no url.
+        /// Do not accept streams with no URI.
         /// </summary>
         protected override void OnValueEmpty(String key)
         {
-            ThrowReadError("Empty stream url.");
+            ThrowReadError("Empty stream URI.");
         }
 
         /// <summary>
@@ -113,19 +126,21 @@ namespace GaGa
         }
 
         /// <summary>
-        /// On an empty line, go back to the menu root.
+        /// On an empty line, add and go back to the menu root.
         /// </summary>
         protected override void OnEmpty()
         {
-            currentMenuItems = menu.MenuItems;
+            AddCurrentMenuItems();
+            currentMenuItemCollection = menu.Items;
         }
 
         /// <summary>
-        /// On a new section, go back to the menu root.
+        /// On a new section, add and go back to the menu root.
         /// </summary>
         protected override void OnSection(String section)
         {
-            currentMenuItems = menu.MenuItems;
+            AddCurrentMenuItems();
+            currentMenuItemCollection = menu.Items;
         }
 
         /// <summary>
@@ -133,28 +148,29 @@ namespace GaGa
         /// </summary>
         protected override void OnSubSection(String subsection, String path)
         {
-            MenuItem submenu;
+            ToolStripMenuItem submenu;
             seenSubmenues.TryGetValue(path, out submenu);
 
             // not seen, create and add to the current menu
             // otherwise it's a duplicate and has already been added:
             if (submenu == null)
             {
-                submenu = new MenuItem(subsection);
+                submenu = new ToolStripMenuItem(subsection);
                 seenSubmenues.Add(path, submenu);
                 currentMenuItems.Add(submenu);
             }
 
-            currentMenuItems = submenu.MenuItems;
+            AddCurrentMenuItems();
+            currentMenuItemCollection = submenu.DropDownItems;
         }
 
         /// <summary>
         /// Add key=value pairs as clickable menu items.
-        /// The uri is stored in the item .Tag property.
+        /// The URI is stored in the item .Tag property.
         /// </summary>
         protected override void OnKeyValue(String key, String value)
         {
-            MenuItem item = new MenuItem(key, onClick);
+            ToolStripMenuItem item = new ToolStripMenuItem(key, null, onClick);
 
             try
             {
@@ -169,28 +185,31 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Read a streams file adding submenus items to a context menu.
+        /// Read a streams file adding submenus and items to a context menu.
         /// </summary>
-        /// <param name="file">Streams file to read lines from.</param>
+        /// <param name="filepath">Path to the streams file to read lines from.</param>
         /// <param name="menu">Target context menu.</param>
         /// <param name="onClick">Click event to attach to menu items.</param>
-        public void Read(StreamsFile file, ContextMenu menu, EventHandler onClick)
+        public void Read(String filepath, ContextMenuStrip menu, EventHandler onClick)
         {
-            this.file = file;
+            this.filepath = filepath;
             this.menu = menu;
             this.onClick = onClick;
 
-            // start at root:
-            currentMenuItems = menu.MenuItems;
-
             try
             {
-                foreach (String line in file.ReadLines())
+                // start at the menu root:
+                currentMenuItemCollection = menu.Items;
+
+                foreach (String line in File.ReadLines(filepath))
                 {
                     currentLineNumber++;
                     currentLine = line;
                     ReadLine(line);
                 }
+
+                // add pending items for the last section:
+                AddCurrentMenuItems();
             }
             finally
             {

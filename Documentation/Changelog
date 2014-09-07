@@ -1,6 +1,29 @@
 
 CHANGELOG
 
+* 2014/09/07:
+
+    - Since GaGa supports .NET 4.0+, the included solution
+      is now for VS 2010+.
+
+    - Moved to ContextMenuStrip. Now it's possible to add sliders
+      and other controls on the context menu.
+
+    - Implemented balance and volume sliders.
+      Based on an initial implementation by @joshimoo.
+
+    - Some internal changes:
+
+        "StreamsFile.cs" no longer exists. It wasn't really needed.
+        Only StreamsFileLoader needs to know about the resource file.
+
+        "Player.cs" now exposes all its internal methods.
+
+    - Reloading the streams file is now faster due to some optimizations
+      in the reader (using AddRange).
+
+    - All the icons are now 16x16px, 32 bit.
+
 * 2014/07/21:
 
     - Revised. Working on MSVC 2014 CTP.
