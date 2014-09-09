@@ -44,12 +44,11 @@ namespace GaGa
         }
 
         /// <summary>
-        /// A media player that is controlled from a notify icon
-        /// using the mouse. Takes control of the notifyicon icon,
+        /// A media player that takes control of a notifyicon icon,
         /// tooltip and balloon to display status.
         /// </summary>
         /// <param name="icon">
-        /// The notify icon that controls playback.
+        /// The notify icon to use.
         /// </param>
         public Player(NotifyIcon icon)
         {
@@ -166,6 +165,8 @@ namespace GaGa
             // if we only call .Stop(), the player continues downloading
             // from online streams, but .Close() calls _mediaState.Init()
             // changing the volume, so save and restore it:
+            // .NET reference source:
+            // <http://referencesource.microsoft.com/#PresentationCore/src/Core/CSharp/System/Windows/Media/MediaPlayerState.cs>
             Double volume = player.Volume;
 
             player.Stop();
