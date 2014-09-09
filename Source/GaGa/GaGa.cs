@@ -226,7 +226,7 @@ namespace GaGa
             Double percent = balance * 100;
 
             balanceLabel.Text = "Balance  " + percent.ToString();
-            player.SetBalance(balance);
+            player.Balance = balance;
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace GaGa
             Double percent = volume * 100;
 
             volumeLabel.Text = "Volume  " + percent.ToString();
-            player.SetVolume(volume);
+            player.Volume = volume;
         }
 
         ///

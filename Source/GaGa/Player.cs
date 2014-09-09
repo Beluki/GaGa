@@ -251,17 +251,31 @@ namespace GaGa
         /// <summary>
         /// Get or set the player balance.
         /// </summary>
-        public void SetBalance(Double balance)
+        public Double Balance
         {
-            player.Balance = balance;
+            get
+            {
+                return player.Balance;
+            }
+            set
+            {
+                player.Balance = value;
+            }
         }
 
         /// <summary>
-        /// Change the player volume.
+        /// Get or set the player volume.
         /// </summary>
-        public void SetVolume(Double volume)
+        public Double Volume
         {
-            player.Volume = volume;
+            get
+            {
+                return player.Volume;
+            }
+            set
+            {
+                player.Volume = value;
+            }
         }
 
         ///
