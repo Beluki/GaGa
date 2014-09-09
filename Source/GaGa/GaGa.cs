@@ -56,6 +56,7 @@ namespace GaGa
             notifyIcon.ContextMenuStrip = new ContextMenuStrip();
             notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
             notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
+            notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
 
             menu = notifyIcon.ContextMenuStrip;
@@ -68,17 +69,14 @@ namespace GaGa
             errorOpenItem = new ToolStripMenuItem();
             errorOpenItem.Text = "Error opening streams file";
             errorOpenItem.Click += OnErrorOpenItemClick;
-            errorOpenItem.ToolTipText = "Click for details";
 
             errorReadItem = new ToolStripMenuItem();
             errorReadItem.Text = "Error reading streams file";
             errorReadItem.Click += OnErrorReadItemClick;
-            errorReadItem.ToolTipText = "Click for details";
 
             editItem = new ToolStripMenuItem();
             editItem.Text = "Edit streams file";
             editItem.Click += OnEditItemClick;
-            editItem.ToolTipText = "Open the streams file in your default editor";
 
             // audio settings:
             audioSettingsItem = new ToolStripMenuItem();
@@ -128,14 +126,14 @@ namespace GaGa
             exitItem = new ToolStripMenuItem();
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
-            exitItem.ToolTipText = "Exit GaGa";
 
             // player:
             player = new Player(notifyIcon);
 
-            // update audio settings:
+            // update everything:
             BalanceUpdate();
             VolumeUpdate();
+            MenuUpdate();
         }
 
         ///
@@ -161,7 +159,7 @@ namespace GaGa
         }
 
         ///
-        /// Reloading the context menu
+        /// Menu updating
         ///
 
         /// <summary>
@@ -209,7 +207,6 @@ namespace GaGa
             }
 
             e.Cancel = false;
-            notifyIcon.InvokeContextMenu();
         }
 
         ///
@@ -249,7 +246,65 @@ namespace GaGa
         }
 
         ///
-        /// Events
+        /// Events: icon
+        /// 
+
+        /// <summary>
+        /// Toggle play with the left mouse button.
+        /// When no stream has been selected, show the context menu instead.
+        /// </summary>
+        private void OnIconLeftMouseClick()
+        {
+            if (player.Source == null)
+            {
+                notifyIcon.InvokeContextMenu();
+            }
+            else
+            {
+                player.TogglePlay();
+            }
+        }
+
+        /// <summary>
+        /// Toggle mute with the wheel button.
+        /// When not playing, show the context menu instead.
+        /// </summary>
+        private void OnIconMiddleMouseClick()
+        {
+            if (player.IsIdle)
+            {
+                notifyIcon.InvokeContextMenu();
+            }
+            else
+            {
+                player.ToggleMute();
+            }
+        }
+
+        /// <summary>
+        /// Allow control via mouse.
+        /// </summary>
+        private void OnIconMouseClick(Object sender, MouseEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButtons.Left:
+                    OnIconLeftMouseClick();
+                    break;
+
+                case MouseButtons.Middle:
+                    OnIconMiddleMouseClick();
+                    break;
+
+                case MouseButtons.Right:
+                case MouseButtons.XButton1:
+                case MouseButtons.XButton2:
+                    break;
+            }
+        }
+
+        ///
+        /// Events: menu
         ///
 
         /// <summary>
