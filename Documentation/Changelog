@@ -1,6 +1,12 @@
 
 CHANGELOG
 
+* 2014/09/10:
+
+    - GaGa tries to match the current Aero theme when highlighting
+      items in the menu. We can't get a native look from ContextMenuStrip
+      but we can try to integrate with system colors when possible.
+
 * 2014/09/07:
 
     - Since GaGa supports .NET 4.0+, the included solution

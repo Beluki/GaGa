@@ -71,7 +71,7 @@ namespace GaGa.Controls
             B = B * (A / 255) + (255 * (1 - (A / 255)));
 
             // we don't want colors too close to white
-            // since those would be indistinguisable from the background:
+            // since those would be indistinguishable from the background:
             if ((R > 220) && (G > 220) && (B > 220))
             {
                 R = 220; G = 220; B = 220;
