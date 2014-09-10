@@ -21,6 +21,9 @@ namespace GaGa
         private readonly NotifyIcon notifyIcon;
         private readonly ContextMenuStrip menu;
 
+        // player:
+        private readonly Player player;
+
         // streams menu:
         private readonly String streamsFilepath;
         private readonly StreamsFileLoader streamsFileLoader;
@@ -32,16 +35,11 @@ namespace GaGa
 
         // audio settings:
         private readonly ToolStripMenuItem audioSettingsItem;
-        private readonly Label balanceLabel;
-        private readonly TrackBar balanceTrackBar;
-        private readonly Label volumeLabel;
-        private readonly TrackBar volumeTrackBar;
+        private readonly ToolStripLabeledTrackBar volumeTrackBar;
+        private readonly ToolStripLabeledTrackBar balanceTrackBar;
 
         // other menu items:
         private readonly ToolStripMenuItem exitItem;
-
-        // player:
-        private readonly Player player;
 
         /// <summary>
         /// GaGa implementation.
@@ -54,12 +52,15 @@ namespace GaGa
 
             notifyIcon = new NotifyIcon(container);
             notifyIcon.ContextMenuStrip = new ContextMenuStrip();
-            notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
             notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
             notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
 
             menu = notifyIcon.ContextMenuStrip;
+            menu.Opening += OnMenuOpening;
+
+            // player:
+            player = new Player(notifyIcon);
 
             // streams menu:
             streamsFilepath = filepath;
@@ -82,28 +83,19 @@ namespace GaGa
             audioSettingsItem = new ToolStripMenuItem();
             audioSettingsItem.Text = "Audio settings";
 
-            MyToolStripLabel balanceStripLabel = new MyToolStripLabel();
-            MyToolStripTrackBar balanceStripTrackBar = new MyToolStripTrackBar();
-            MyToolStripLabel volumeStripLabel = new MyToolStripLabel();
-            MyToolStripTrackBar volumeStripTrackBar = new MyToolStripTrackBar();
+            balanceTrackBar = new ToolStripLabeledTrackBar();
+            balanceTrackBar.Label.Text = "Balance";
+            balanceTrackBar.TrackBar.Minimum = -10;
+            balanceTrackBar.TrackBar.Maximum = 10;
+            balanceTrackBar.TrackBar.Value = 0;
+            balanceTrackBar.TrackBar.ValueChanged += OnBalanceTrackBarChanged;
 
-            balanceLabel = balanceStripLabel.Label;
-            balanceLabel.Text = "Balance";
-
-            balanceTrackBar = balanceStripTrackBar.TrackBar;
-            balanceTrackBar.Minimum = -10;
-            balanceTrackBar.Maximum = 10;
-            balanceTrackBar.Value = 0;
-            balanceTrackBar.ValueChanged += OnBalanceTrackBarChanged;
-
-            volumeLabel = volumeStripLabel.Label;
-            volumeLabel.Text = "Volume";
-
-            volumeTrackBar = volumeStripTrackBar.TrackBar;
-            volumeTrackBar.Minimum = 0;
-            volumeTrackBar.Maximum = 20;
-            volumeTrackBar.Value = 10;
-            volumeTrackBar.ValueChanged += OnVolumeTrackBarChanged;
+            volumeTrackBar = new ToolStripLabeledTrackBar();
+            volumeTrackBar.Label.Text = "Volume";
+            volumeTrackBar.TrackBar.Minimum = 0;
+            volumeTrackBar.TrackBar.Maximum = 20;
+            volumeTrackBar.TrackBar.Value = 10;
+            volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
             // change back color depending on the current renderer:
             if (menu.Renderer is ToolStripProfessionalRenderer)
@@ -111,29 +103,26 @@ namespace GaGa
                 ProfessionalColorTable colors = new ProfessionalColorTable();
                 Color back = colors.ToolStripDropDownBackground;
 
-                balanceLabel.BackColor = back;
                 balanceTrackBar.BackColor = back;
-                volumeLabel.BackColor = back;
+                balanceTrackBar.Label.BackColor = back;
+                balanceTrackBar.TrackBar.BackColor = back;
+
                 volumeTrackBar.BackColor = back;
+                volumeTrackBar.Label.BackColor = back;
+                volumeTrackBar.TrackBar.BackColor = back;
             }
 
-            audioSettingsItem.DropDownItems.Add(balanceStripLabel);
-            audioSettingsItem.DropDownItems.Add(balanceStripTrackBar);
-            audioSettingsItem.DropDownItems.Add(volumeStripLabel);
-            audioSettingsItem.DropDownItems.Add(volumeStripTrackBar);
+            audioSettingsItem.DropDownItems.Add(balanceTrackBar);
+            audioSettingsItem.DropDownItems.Add(volumeTrackBar);
 
             // other items:
             exitItem = new ToolStripMenuItem();
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
 
-            // player:
-            player = new Player(notifyIcon);
-
             // update everything:
             BalanceUpdate();
             VolumeUpdate();
-            MenuUpdate();
         }
 
         ///
@@ -201,12 +190,11 @@ namespace GaGa
         {
             if (streamsFileLoader.MustReload())
             {
-                menu.SuspendLayout();
                 MenuUpdate();
-                menu.ResumeLayout();
             }
 
             e.Cancel = false;
+            notifyIcon.InvokeContextMenu();
         }
 
         ///
@@ -214,34 +202,34 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Update the balance label and trackbar
+        /// Update the balance label
         /// and send the current value to the player.
         /// </summary>
         private void BalanceUpdate()
         {
-            Double current = (Double) balanceTrackBar.Value;
-            Double maximum = balanceTrackBar.Maximum;
+            Double current = (Double) balanceTrackBar.TrackBar.Value;
+            Double maximum = balanceTrackBar.TrackBar.Maximum;
 
             Double balance = current / maximum;
             Double percent = balance * 100;
 
-            balanceLabel.Text = "Balance  " + percent.ToString();
+            balanceTrackBar.Label.Text = "Balance  " + percent.ToString();
             player.Balance = balance;
         }
 
         /// <summary>
-        /// Update the volume label and trackbar
+        /// Update the volume label
         /// and send the current value to the player.
         /// </summary>
         private void VolumeUpdate()
         {
-            Double current = (Double) volumeTrackBar.Value;
-            Double maximum = volumeTrackBar.Maximum;
+            Double current = (Double) volumeTrackBar.TrackBar.Value;
+            Double maximum = volumeTrackBar.TrackBar.Maximum;
 
             Double volume = current / maximum;
             Double percent = volume * 100;
 
-            volumeLabel.Text = "Volume  " + percent.ToString();
+            volumeTrackBar.Label.Text = "Volume  " + percent.ToString();
             player.Volume = volume;
         }
 
