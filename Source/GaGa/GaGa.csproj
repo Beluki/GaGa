@@ -40,6 +40,9 @@
     <ApplicationIcon>Resources\idle.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GlobalHotkeys">
+      <HintPath>..\packages\GlobalHotkeys\GlobalHotkeys.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
