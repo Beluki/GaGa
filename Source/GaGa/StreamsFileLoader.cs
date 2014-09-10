@@ -71,8 +71,8 @@ namespace GaGa
 
             DateTime lastWriteTime = File.GetLastWriteTimeUtc(filepath);
 
-            // check the date:
-            // the file may be deleted before calling GetLastWriteTime()
+            // corner case:
+            // the file may be deleted before calling GetLastWriteTimeUtc()
             if (lastWriteTime == Util.FileNotFoundUtc)
                 throw new IOException("Streams file deleted after creating it.");
 

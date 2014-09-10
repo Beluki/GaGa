@@ -165,8 +165,6 @@ namespace GaGa
             // if we only call .Stop(), the player continues downloading
             // from online streams, but .Close() calls _mediaState.Init()
             // changing the volume, so save and restore it:
-            // .NET reference source:
-            // <http://referencesource.microsoft.com/#PresentationCore/src/Core/CSharp/System/Windows/Media/MediaPlayerState.cs>
             Double volume = player.Volume;
 
             player.Stop();

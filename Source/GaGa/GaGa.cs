@@ -16,6 +16,13 @@ namespace GaGa
 {
     internal class GaGa : ApplicationContext
     {
+        // files:
+        private readonly String settingsFilepath;
+        private readonly String streamsFilepath;
+
+        // file manipulation:
+        private readonly StreamsFileLoader streamsFileLoader;
+
         // gui components:
         private readonly Container container;
         private readonly NotifyIcon notifyIcon;
@@ -25,16 +32,12 @@ namespace GaGa
         // player:
         private readonly Player player;
 
-        // streams menu:
-        private readonly String streamsFilepath;
-        private readonly StreamsFileLoader streamsFileLoader;
-
         // streams menu constant items:
         private readonly ToolStripMenuItem errorOpenItem;
         private readonly ToolStripMenuItem errorReadItem;
         private readonly ToolStripMenuItem editItem;
 
-        // audio settings:
+        // audio settings items:
         private readonly ToolStripMenuItem audioSettingsItem;
         private readonly ToolStripLabeledTrackBar volumeTrackBar;
         private readonly ToolStripLabeledTrackBar balanceTrackBar;
@@ -46,13 +49,21 @@ namespace GaGa
         /// GaGa implementation.
         /// </summary>
         /// <param name="filepath">Path to the streams file to use.</param>
-        public GaGa(String filepath)
+        public GaGa(String settingsFilepath, String streamsFilepath)
         {
+            // files:
+            this.settingsFilepath = settingsFilepath;
+            this.streamsFilepath = streamsFilepath;
+
+            // file manipulation:
+            streamsFileLoader = new StreamsFileLoader(streamsFilepath, "GaGa.Resources.streams.ini");
+
             // gui components:
             container = new Container();
 
             notifyIcon = new NotifyIcon(container);
             notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+            notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
             notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
             notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
@@ -60,15 +71,10 @@ namespace GaGa
             toolStripRenderer = new ToolStripAeroRenderer();
 
             menu = notifyIcon.ContextMenuStrip;
-            menu.Opening += OnMenuOpening;
             menu.Renderer = toolStripRenderer;
-            
+           
             // player:
             player = new Player(notifyIcon);
-
-            // streams menu:
-            streamsFilepath = filepath;
-            streamsFileLoader = new StreamsFileLoader(filepath, "GaGa.Resources.streams.ini");
 
             // streams menu constant items:
             errorOpenItem = new ToolStripMenuItem();
@@ -83,7 +89,7 @@ namespace GaGa
             editItem.Text = "Edit streams file";
             editItem.Click += OnEditItemClick;
 
-            // audio settings:
+            // audio settings items:
             audioSettingsItem = new ToolStripMenuItem();
             audioSettingsItem.Text = "Audio settings";
 
@@ -101,17 +107,16 @@ namespace GaGa
             volumeTrackBar.TrackBar.Value = 10;
             volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
-            // change back color to the renderer color:
+            // adjust the backcolor to the renderer:
             Color back = toolStripRenderer.ColorTable.ToolStripDropDownBackground;
 
             balanceTrackBar.BackColor = back;
             balanceTrackBar.Label.BackColor = back;
             balanceTrackBar.TrackBar.BackColor = back;
-
             volumeTrackBar.BackColor = back;
             volumeTrackBar.Label.BackColor = back;
             volumeTrackBar.TrackBar.BackColor = back;
-            
+
             audioSettingsItem.DropDownItems.Add(balanceTrackBar);
             audioSettingsItem.DropDownItems.Add(volumeTrackBar);
 
@@ -120,7 +125,7 @@ namespace GaGa
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
 
-            // update everything:
+            // update:
             BalanceUpdate();
             VolumeUpdate();
         }

@@ -26,7 +26,7 @@ namespace GaGa
         public static readonly DateTime FileNotFoundUtc = DateTime.FromFileTimeUtc(0);
 
         ///
-        /// Functions
+        /// Resources
         ///
 
         /// <summary>
@@ -59,6 +59,31 @@ namespace GaGa
             }
         }
 
+        ///
+        /// Math
+        ///
+
+        /// <summary>
+        /// Clamp a value inclusively beetwen min and max.
+        /// </summary>
+        /// <param name="val">Input value.</param>
+        /// <param name="min">Maximum value.</param>
+        /// <param name="max">Minimum value.</param>
+        public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
+        {
+            if (value.CompareTo(min) < 0)
+                return min;
+            
+            if (value.CompareTo(max) > 0)
+                return max;
+
+            return value;
+        }
+
+        ///
+        /// MessageBoxes
+        ///
+
         /// <summary>
         /// Show a MessageBox with Yes and No buttons.
         /// Return true when Yes is clicked, false otherwise.
@@ -71,16 +96,16 @@ namespace GaGa
         }
 
         ///
-        /// Properties
-        ///
+        /// OS information
+        /// 
 
         /// <summary>
-        /// Get the current Windows Aero color
+        /// Return the current Windows Aero colorization value as a Color
         /// or Color.Empty when Aero is not supported.
         /// </summary>
-        public static Color AeroColor
+        public static Color GetCurrentAeroColor()
         {
-            get
+            try
             {
                 Object value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor", null);
 
@@ -93,13 +118,18 @@ namespace GaGa
                     return Color.FromArgb((Int32) value);
                 }
             }
+            // unable to read registry or present but value not an Int32:
+            catch (Exception)
+            {
+                return Color.Empty;
+            }
         }
 
         /// <summary>
         /// Get the path for the directory that contains
         /// the current application executable.
         /// </summary>
-        public static String ExeFolder
+        public static String ApplicationFolder
         {
             get
             {
@@ -108,7 +138,7 @@ namespace GaGa
         }
 
         ///
-        /// Extensions
+        /// NotifyIcon extensions
         ///
 
         /// <summary>

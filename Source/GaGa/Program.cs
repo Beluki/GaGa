@@ -18,13 +18,14 @@ namespace GaGa
         [STAThread]
         private static void Main()
         {
-            // use a "streams.ini" file located in the same folder
-            // as the executable for this application:
-            String filepath = Path.Combine(Util.ExeFolder, "streams.ini");
+            // default paths for the settings and the streams file:
+            String currentFolder = Util.ApplicationFolder;
+            String settingsFilepath = Path.Combine(currentFolder, "GaGa.dat");
+            String streamsFilepath = Path.Combine(currentFolder, "streams.ini");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GaGa(filepath));
+            Application.Run(new GaGa(settingsFilepath, streamsFilepath));
         }
     }
 }

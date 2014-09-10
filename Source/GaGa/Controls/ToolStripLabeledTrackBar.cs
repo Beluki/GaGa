@@ -13,27 +13,26 @@ namespace GaGa.Controls
     [System.ComponentModel.DesignerCategory("")]
     internal class LabeledTrackBar : Panel
     {
-        public Label label;
-        public TrackBar trackbar;
+        public Label Label;
+        public TrackBar TrackBar;
 
         public LabeledTrackBar()
         {
-            label = new Label();
-            label.Location = new Point(0, 0);
+            Label = new Label();
+            Label.Location = new Point(0, 0);
 
-            trackbar = new TrackBar();
-            trackbar.Location = new Point(0, label.Bottom);
-            
-            trackbar.AutoSize = false;
-            trackbar.TickStyle = TickStyle.None;
-            trackbar.AutoSize = false;
-            trackbar.Height = (Int32) (trackbar.PreferredSize.Height * 0.65);
-            trackbar.Width = (Int32) (trackbar.PreferredSize.Width * 1.2);
+            TrackBar = new TrackBar();
+            TrackBar.Location = new Point(0, Label.Bottom);
 
-            Controls.Add(label);
-            Controls.Add(trackbar);
+            TrackBar.AutoSize = false;
+            TrackBar.TickStyle = TickStyle.None;
+            TrackBar.Height = (Int32) (TrackBar.PreferredSize.Height * 0.65);
+            TrackBar.Width = (Int32) (TrackBar.PreferredSize.Width * 1.2);
 
-            Width = Math.Max(label.Width, trackbar.Width);
+            Controls.Add(Label);
+            Controls.Add(TrackBar);
+
+            Width = Math.Max(Label.Width, TrackBar.Width);
         }
     }
 
@@ -47,8 +46,8 @@ namespace GaGa.Controls
         {
             LabeledTrackBar control = (LabeledTrackBar) this.Control;
             
-            Label = control.label;
-            TrackBar = control.trackbar;
+            Label = control.Label;
+            TrackBar = control.TrackBar;
         }
     }
 }
