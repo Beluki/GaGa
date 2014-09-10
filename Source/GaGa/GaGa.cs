@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using GaGa.Controls;
+using GlobalHotkeys;
 
 
 namespace GaGa
@@ -42,6 +43,9 @@ namespace GaGa
         // other menu items:
         private readonly ToolStripMenuItem exitItem;
 
+        // Hotkeys
+        private HotKeyManager hotkeyManager;
+
         /// <summary>
         /// GaGa implementation.
         /// </summary>
@@ -62,7 +66,7 @@ namespace GaGa
             menu = notifyIcon.ContextMenuStrip;
             menu.Opening += OnMenuOpening;
             menu.Renderer = toolStripRenderer;
-            
+
             // player:
             player = new Player(notifyIcon);
 
@@ -111,7 +115,7 @@ namespace GaGa
             volumeTrackBar.BackColor = back;
             volumeTrackBar.Label.BackColor = back;
             volumeTrackBar.TrackBar.BackColor = back;
-            
+
             audioSettingsItem.DropDownItems.Add(balanceTrackBar);
             audioSettingsItem.DropDownItems.Add(volumeTrackBar);
 
@@ -119,6 +123,23 @@ namespace GaGa
             exitItem = new ToolStripMenuItem();
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
+
+            // Hotkeys - TODO: Add config in which user can define these
+            hotkeyManager = new HotKeyManager();
+            hotkeyManager.RegisterHotKey(ModifierKeys.Alt, Keys.P);
+            hotkeyManager.RegisterHotKey(ModifierKeys.Alt, Keys.O);
+
+            // Mediakeys - Alternative implementation for some keyboards
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.VolumeMute);
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.VolumeDown);
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.VolumeUp);
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.MediaPlayPause);
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.Play);
+            hotkeyManager.RegisterHotKey(ModifierKeys.None, Keys.Pause);
+
+            // Register Hot&Media key events
+            hotkeyManager.HotKeyPressed += OnHotKeyPressed;
+            hotkeyManager.MediaKeyPressed += OnMediaKeyPressed;
 
             // update everything:
             BalanceUpdate();
@@ -209,7 +230,7 @@ namespace GaGa
         /// </summary>
         private void BalanceUpdate()
         {
-            Double current = (Double) balanceTrackBar.TrackBar.Value;
+            Double current = (Double)balanceTrackBar.TrackBar.Value;
             Double maximum = balanceTrackBar.TrackBar.Maximum;
 
             Double balance = current / maximum;
@@ -225,7 +246,7 @@ namespace GaGa
         /// </summary>
         private void VolumeUpdate()
         {
-            Double current = (Double) volumeTrackBar.TrackBar.Value;
+            Double current = (Double)volumeTrackBar.TrackBar.Value;
             Double maximum = volumeTrackBar.TrackBar.Maximum;
 
             Double volume = current / maximum;
@@ -279,17 +300,17 @@ namespace GaGa
             switch (e.Button)
             {
                 case MouseButtons.Left:
-                    OnIconLeftMouseClick();
-                    break;
+                OnIconLeftMouseClick();
+                break;
 
                 case MouseButtons.Middle:
-                    OnIconMiddleMouseClick();
-                    break;
+                OnIconMiddleMouseClick();
+                break;
 
                 case MouseButtons.Right:
                 case MouseButtons.XButton1:
                 case MouseButtons.XButton2:
-                    break;
+                break;
             }
         }
 
@@ -302,9 +323,9 @@ namespace GaGa
         /// </summary>
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
-            ToolStripMenuItem item = (ToolStripMenuItem) sender;
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
 
-            PlayerStream stream = new PlayerStream(item.Text, (Uri) item.Tag);
+            PlayerStream stream = new PlayerStream(item.Text, (Uri)item.Tag);
             player.Play(stream);
         }
 
@@ -313,8 +334,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorOpenItemClick(Object sender, EventArgs e)
         {
-            ToolStripMenuItem item = (ToolStripMenuItem) sender;
-            Exception exception = (Exception) item.Tag;
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            Exception exception = (Exception)item.Tag;
 
             String text = exception.Message;
             String caption = "Error opening streams file";
@@ -326,8 +347,8 @@ namespace GaGa
         /// </summary>
         private void OnErrorReadItemClick(Object sender, EventArgs e)
         {
-            ToolStripMenuItem item = (ToolStripMenuItem) sender;
-            StreamsFileReadError exception = (StreamsFileReadError) item.Tag;
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            StreamsFileReadError exception = (StreamsFileReadError)item.Tag;
 
             String text = String.Format(
                 "{0} \n" +
@@ -381,6 +402,92 @@ namespace GaGa
             notifyIcon.Visible = false;
             Application.Exit();
         }
+
+        #region Hotkeys & Mediakeys
+        /// <summary>
+        /// A Global Hotkey was pressed, process it
+        /// </summary>
+        /// <param name="e">contains the key & modifier that was pressed</param>
+        private void OnHotKeyPressed(object sender, HotKeyPressedEventArgs e)
+        {
+            // TODO: Read these from a config file
+            if (e.Modifier == ModifierKeys.Alt && e.Key == Keys.P)
+            {
+                player.TogglePlay();
+            }
+            else if (e.Modifier == ModifierKeys.Alt && e.Key == Keys.O)
+            {
+                player.ToggleMute();
+            }
+
+            // Media Keys
+            else if (e.Key == Keys.VolumeMute) { player.ToggleMute(); }
+            else if (e.Key == Keys.VolumeDown) { Volume -= 0.10; ; }
+            else if (e.Key == Keys.VolumeUp) { Volume += 0.10; }
+            else if (e.Key == Keys.MediaPlayPause) { player.TogglePlay(); }
+            else if (e.Key == Keys.Play) { player.Play(); }
+            else if (e.Key == Keys.Pause) { player.Stop(); }
+        }
+
+        /// <summary>
+        /// A Media Key  was pressed, process it
+        /// </summary>
+        /// <param name="e">contains the Application Command that was send</param>
+        private void OnMediaKeyPressed(object sender, MediaKeyPressedEventArgs e)
+        {
+            // TODO: Read these from a config file
+            // TODO: Think about which one of these you want to use
+            // TODO: [GlobalHotkeys] Think about providing individual events to subscribe to, instead of evaluating the ApplicationCommand on the consumer
+            switch (e.Command)
+            {
+                case ApplicationCommand.VolumeMute:
+                player.ToggleMute();
+                break;
+                case ApplicationCommand.VolumeDown:
+                Volume -= 0.10;
+                break;
+                case ApplicationCommand.VolumeUp:
+                Volume += 0.10;
+                break;
+                case ApplicationCommand.MediaNexttrack:
+                // TODO: Read in the Streams in a list so we can cycle them instead of having only access to one stream
+                break;
+                case ApplicationCommand.MediaPrevioustrack:
+                // TODO: Read in the Streams in a list so we can cycle them instead of having only access to one stream
+                break;
+                case ApplicationCommand.MediaStop:
+                player.Stop();
+                break;
+                case ApplicationCommand.MediaPlayPause:
+                player.TogglePlay();
+                break;
+                case ApplicationCommand.Close:
+                Application.Exit();
+                break;
+                case ApplicationCommand.MediaPlay:
+                player.Play();
+                break;
+                case ApplicationCommand.MediaPause:
+                player.Stop();
+                break;
+                case ApplicationCommand.MediaFastForward:
+                break;
+                case ApplicationCommand.MediaRewind:
+                break;
+            }
+        }
+
+        /// <summary>
+        /// Uses the range 0.0 - 1.0 and maps it to the Sliderbar
+        /// TODO: Quick and dirty replace with something better
+        /// TODO: I don't like that sliderbar and player use different volume scales, need to think about a better way of doing this 
+        /// </summary>
+        public double Volume
+        {
+            get { return (double)volumeTrackBar.TrackBar.Value / volumeTrackBar.TrackBar.Maximum; }
+            set { volumeTrackBar.TrackBar.Value = (int)(value * volumeTrackBar.TrackBar.Maximum); }
+        }
+        #endregion
     }
 }
 
