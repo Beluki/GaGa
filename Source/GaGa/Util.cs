@@ -9,6 +9,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
+using Microsoft.Win32;
+
 
 namespace GaGa
 {
@@ -73,12 +75,36 @@ namespace GaGa
         ///
 
         /// <summary>
+        /// Get the current Windows Aero color
+        /// or Color.Empty when Aero is not supported.
+        /// </summary>
+        public static Color AeroColor
+        {
+            get
+            {
+                Object value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor", null);
+
+                if (value == null)
+                {
+                    return Color.Empty;
+                }
+                else
+                {
+                    return Color.FromArgb((Int32) value);
+                }
+            }
+        }
+
+        /// <summary>
         /// Get the path for the directory that contains
         /// the current application executable.
         /// </summary>
         public static String ExeFolder
         {
-            get { return Path.GetDirectoryName(Application.ExecutablePath); }
+            get
+            {
+                return Path.GetDirectoryName(Application.ExecutablePath);
+            }
         }
 
         ///

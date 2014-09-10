@@ -19,6 +19,7 @@ namespace GaGa
         // gui components:
         private readonly Container container;
         private readonly NotifyIcon notifyIcon;
+        private readonly ToolStripAeroRenderer toolStripRenderer;
         private readonly ContextMenuStrip menu;
 
         // player:
@@ -56,9 +57,12 @@ namespace GaGa
             notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
 
+            toolStripRenderer = new ToolStripAeroRenderer();
+
             menu = notifyIcon.ContextMenuStrip;
             menu.Opening += OnMenuOpening;
-
+            menu.Renderer = toolStripRenderer;
+            
             // player:
             player = new Player(notifyIcon);
 
@@ -97,21 +101,17 @@ namespace GaGa
             volumeTrackBar.TrackBar.Value = 10;
             volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
-            // change back color depending on the current renderer:
-            if (menu.Renderer is ToolStripProfessionalRenderer)
-            {
-                ProfessionalColorTable colors = new ProfessionalColorTable();
-                Color back = colors.ToolStripDropDownBackground;
+            // change back color to the renderer color:
+            Color back = toolStripRenderer.ColorTable.ToolStripDropDownBackground;
 
-                balanceTrackBar.BackColor = back;
-                balanceTrackBar.Label.BackColor = back;
-                balanceTrackBar.TrackBar.BackColor = back;
+            balanceTrackBar.BackColor = back;
+            balanceTrackBar.Label.BackColor = back;
+            balanceTrackBar.TrackBar.BackColor = back;
 
-                volumeTrackBar.BackColor = back;
-                volumeTrackBar.Label.BackColor = back;
-                volumeTrackBar.TrackBar.BackColor = back;
-            }
-
+            volumeTrackBar.BackColor = back;
+            volumeTrackBar.Label.BackColor = back;
+            volumeTrackBar.TrackBar.BackColor = back;
+            
             audioSettingsItem.DropDownItems.Add(balanceTrackBar);
             audioSettingsItem.DropDownItems.Add(volumeTrackBar);
 
@@ -192,6 +192,8 @@ namespace GaGa
             {
                 MenuUpdate();
             }
+
+            toolStripRenderer.UpdateColors();
 
             e.Cancel = false;
             notifyIcon.InvokeContextMenu();

@@ -47,6 +47,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ToolStripAeroRenderer.cs" />
     <Compile Include="Controls\ToolStripLabeledTrackBar.cs" />
     <Compile Include="GaGa.cs" />
     <Compile Include="mINI\mINI.cs" />
