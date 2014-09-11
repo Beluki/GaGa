@@ -61,7 +61,7 @@ namespace GaGa.Controls
             Double G = (Double) baseColor.G;
             Double B = (Double) baseColor.B;
 
-            // darken too low alpha for clear visibility:
+            // too low alpha for clear visibility, darken it:
             if (A < 30)
             {
                 A = 30;
@@ -78,9 +78,14 @@ namespace GaGa.Controls
             // those would be indistinguishable from the background:
             if ((R > 220) && (G > 220) && (B > 220))
             {
-                R = 220;
-                G = 220;
-                B = 220;
+                R = 220; G = 220; B = 220;
+            }
+
+            // we don't want color too close to black
+            // those would obscure the text:
+            if ((R < 30) && (G < 30) && (B < 30))
+            {
+                R = 30; G = 30; B = 30;
             }
 
             R = Util.Clamp(R, 0, 255);
@@ -122,7 +127,7 @@ namespace GaGa.Controls
     {
         /// <summary>
         /// A renderer that tries to match the current aero theme
-        /// when rendering selected menu items.
+        /// when drawing selected menu items.
         /// </summary>
         public ToolStripAeroRenderer() : base(new AeroColorTable())
         {

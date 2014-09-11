@@ -97,11 +97,11 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Clamp a value inclusively beetwen min and max.
+        /// Clamp a value inclusively between min and max.
         /// </summary>
         /// <param name="value">Input value.</param>
-        /// <param name="min">Maximum value.</param>
-        /// <param name="max">Minimum value.</param>
+        /// <param name="min">Minimum value.</param>
+        /// <param name="max">Maximum value.</param>
         public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
         {
             if (value.CompareTo(min) < 0)

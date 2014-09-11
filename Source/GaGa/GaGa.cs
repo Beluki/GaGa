@@ -47,7 +47,12 @@ namespace GaGa
         /// <summary>
         /// GaGa implementation.
         /// </summary>
-        /// <param name="filepath">Path to the streams file to use.</param>
+        /// <param name="settingsFilepath">
+        /// Path to the settings file to use.
+        /// </param>
+        /// <param name="streamsFilepath">
+        /// Path to the streams file to use.
+        /// </param>
         public GaGa(String settingsFilepath, String streamsFilepath)
         {
             // gui components:
@@ -154,6 +159,7 @@ namespace GaGa
 
         /// <summary>
         /// Load the settings from our streams filepath if it exists.
+        /// Return default settings otherwise.
         /// </summary>
         private Settings SettingsLoad()
         {
@@ -181,7 +187,7 @@ namespace GaGa
                 MessageBox.Show(text, caption);
             }
 
-            // unable to load, return default settings:
+            // unable to load or doesn't exist:
             return new Settings();
         }
 
@@ -249,12 +255,12 @@ namespace GaGa
         }
 
         /// <summary>
-        /// When the menu is about to be opened, reload first if needed.
+        /// When the menu is about to be opened, reload from the streams file
+        /// and update the renderer colors when needed.
         /// </summary>
         private void OnMenuOpening(Object sender, CancelEventArgs e)
         {
             ContextMenuStrip menu = notifyIcon.ContextMenuStrip;
-
             menu.SuspendLayout();
 
             if (streamsFileLoader.MustReload())
@@ -263,8 +269,8 @@ namespace GaGa
             }
 
             toolStripRenderer.UpdateColors();
-            menu.ResumeLayout();
 
+            menu.ResumeLayout();
             e.Cancel = false;
             notifyIcon.InvokeContextMenu();
         }
@@ -425,9 +431,8 @@ namespace GaGa
             StreamsFileOpen();
         }
 
-
         /// <summary>
-        /// Balance changed.
+        /// Balance changed, update label and send new value to the player.
         /// </summary>
         private void OnBalanceTrackBarChanged(Object sender, EventArgs e)
         {
@@ -435,7 +440,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Volume changed.
+        /// Volume changed, update label and send new value to the player.
         /// </summary>
         private void OnVolumeTrackBarChanged(Object sender, EventArgs e)
         {
@@ -443,7 +448,7 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Exit clicked, stop playing, hide icon and exit.
+        /// Exit clicked, stop playing, save settings, hide icon and exit.
         /// </summary>
         private void OnExitItemClick(Object sender, EventArgs e)
         {

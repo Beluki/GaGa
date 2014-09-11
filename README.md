@@ -107,8 +107,8 @@ folder for more information. No warranty though.
 [Releases]: https://github.com/Beluki/GaGa/releases
 
 [Mono]: http://mono-project.com
-[Notepad2]: http://www.flos-freeware.ch/notepad2.html
 [.NET Framework]: http://www.microsoft.com/en-us/download/details.aspx?id=30653
+[Notepad2]: http://www.flos-freeware.ch/notepad2.html
 [RadioTray]: http://radiotray.sourceforge.net
 [Sublime Text]: http://www.sublimetext.com/
 

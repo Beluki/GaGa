@@ -81,7 +81,6 @@ namespace GaGa
                 reader.Read(filepath, menu, onClick);
                 lastUpdated = lastWriteTime;
             }
-
             // update time on parsing errors
             // the syntax will still be wrong until the file changes:
             catch (StreamsFileReadError)
