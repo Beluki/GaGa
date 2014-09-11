@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 using GaGa.Controls;
@@ -16,11 +17,12 @@ namespace GaGa
 {
     internal class GaGa : ApplicationContext
     {
-        // files:
+        // settings file:
         private readonly String settingsFilepath;
-        private readonly String streamsFilepath;
+        private readonly Settings settings;
 
-        // file manipulation:
+        // streams file:
+        private readonly String streamsFilepath;
         private readonly StreamsFileLoader streamsFileLoader;
 
         // gui components:
@@ -51,11 +53,12 @@ namespace GaGa
         /// <param name="filepath">Path to the streams file to use.</param>
         public GaGa(String settingsFilepath, String streamsFilepath)
         {
-            // files:
+            // settings file:
             this.settingsFilepath = settingsFilepath;
-            this.streamsFilepath = streamsFilepath;
+            settings = SettingsLoad();
 
-            // file manipulation:
+            // streams file:
+            this.streamsFilepath = streamsFilepath;
             streamsFileLoader = new StreamsFileLoader(streamsFilepath, "GaGa.Resources.streams.ini");
 
             // gui components:
@@ -72,7 +75,7 @@ namespace GaGa
 
             menu = notifyIcon.ContextMenuStrip;
             menu.Renderer = toolStripRenderer;
-           
+
             // player:
             player = new Player(notifyIcon);
 
@@ -125,6 +128,11 @@ namespace GaGa
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
 
+            // apply settings:
+            balanceTrackBar.TrackBar.Value = settings.LastBalanceTrackBarValue;
+            volumeTrackBar.TrackBar.Value = settings.LastVolumeTrackBarValue;
+            player.Select(settings.LastPlayerStream);
+
             // update:
             BalanceUpdate();
             VolumeUpdate();
@@ -148,6 +156,67 @@ namespace GaGa
             {
                 String text = exception.Message;
                 String caption = "Error openning streams file";
+                MessageBox.Show(text, caption);
+            }
+        }
+
+        ///
+        /// Settings
+        ///
+
+        /// <summary>
+        /// Load the settings from our streams filepath if it exists.
+        /// </summary>
+        private Settings SettingsLoad()
+        {
+            try
+            {
+                if (File.Exists(settingsFilepath))
+                {
+                    return Util.Deserialize<Settings>(settingsFilepath);
+                }
+            }
+            catch (Exception exception)
+            {
+                String text = String.Format(
+                    "Unable to load settings: \n" +
+                    "{0} \n\n" +
+                    "This usually means that the file is corrupt, empty \n" +
+                    "or incompatible with the current GaGa version. \n\n" +
+                    "Exception message: \n" +
+                    "{1} \n",
+                    settingsFilepath,
+                    exception.Message
+                );
+
+                String caption = "Error loading settings file";
+                MessageBox.Show(text, caption);
+            }
+
+            // unable to read, use default:
+            return new Settings();
+        }
+
+        /// <summary>
+        /// Save the current settings.
+        /// </summary>
+        private void SettingsSave()
+        {
+            try
+            {
+                Util.Serialize<Settings>(settings, settingsFilepath);
+            }
+            catch (Exception exception)
+            {
+                String text = String.Format(
+                    "Unable to save settings: \n" +
+                    "{0} \n\n" +
+                    "Exception message: \n" +
+                    "{1} \n",
+                    settingsFilepath,
+                    exception.Message);
+
+                String caption = "Error saving settings file";
                 MessageBox.Show(text, caption);
             }
         }
@@ -242,7 +311,7 @@ namespace GaGa
 
         ///
         /// Events: icon
-        /// 
+        ///
 
         /// <summary>
         /// Toggle play with the left mouse button.
@@ -308,8 +377,8 @@ namespace GaGa
         private void OnStreamItemClick(Object sender, EventArgs e)
         {
             ToolStripMenuItem item = (ToolStripMenuItem) sender;
-
             PlayerStream stream = new PlayerStream(item.Text, (Uri) item.Tag);
+
             player.Play(stream);
         }
 
@@ -384,6 +453,12 @@ namespace GaGa
         {
             player.Stop();
             notifyIcon.Visible = false;
+
+            settings.LastBalanceTrackBarValue = balanceTrackBar.TrackBar.Value;
+            settings.LastVolumeTrackBarValue = volumeTrackBar.TrackBar.Value;
+            settings.LastPlayerStream = player.Source;
+            SettingsSave();
+
             Application.Exit();
         }
     }

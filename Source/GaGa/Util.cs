@@ -7,6 +7,8 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 using Microsoft.Win32;
@@ -60,6 +62,42 @@ namespace GaGa
         }
 
         ///
+        /// IO
+        ///
+
+        /// <summary>
+        /// Serialize an object to a binary file.
+        /// </summary>
+        /// <param name="value">Object to serialize.</param>
+        /// <param name="filepath">Destination path.</param>
+        public static void Serialize<T>(T value, String filepath)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            using (FileStream fs = new FileStream(filepath, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                formatter.Serialize(fs, value);
+            }
+        }
+
+        /// <summary>
+        /// Deserialize an object from a binary file.
+        /// </summary>
+        /// <param name="filepath">File path.</param>
+        public static T Deserialize<T>(String filepath)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            T result;
+
+            using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read))
+            {
+                result = (T) formatter.Deserialize(fs);
+            }
+
+            return result;
+        }
+
+        ///
         /// Math
         ///
 
@@ -73,7 +111,7 @@ namespace GaGa
         {
             if (value.CompareTo(min) < 0)
                 return min;
-            
+
             if (value.CompareTo(max) > 0)
                 return max;
 
@@ -97,7 +135,7 @@ namespace GaGa
 
         ///
         /// OS information
-        /// 
+        ///
 
         /// <summary>
         /// Return the current Windows Aero colorization value as a Color

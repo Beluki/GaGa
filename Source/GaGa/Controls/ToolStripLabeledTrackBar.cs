@@ -45,7 +45,7 @@ namespace GaGa.Controls
         public ToolStripLabeledTrackBar() : base(new LabeledTrackBar())
         {
             LabeledTrackBar control = (LabeledTrackBar) this.Control;
-            
+
             Label = control.Label;
             TrackBar = control.TrackBar;
         }

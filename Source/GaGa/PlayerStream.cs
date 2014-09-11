@@ -8,6 +8,7 @@ using System;
 
 namespace GaGa
 {
+    [Serializable]
     internal class PlayerStream
     {
         /// <summary>

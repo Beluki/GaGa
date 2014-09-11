@@ -1,6 +1,11 @@
 
 CHANGELOG
 
+* 2014/09/11:
+
+    - Added a settings file.
+      GaGa now remembers the balance, volume and last stream played.
+
 * 2014/09/10:
 
     - GaGa tries to match the current Aero theme when highlighting

@@ -192,6 +192,15 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Set a given stream as current.
+        /// </summary>
+        public void Select(PlayerStream stream)
+        {
+            Source = stream;
+            UpdateIcon();
+        }
+
+        /// <summary>
         /// Mute the player.
         /// </summary>
         public void Mute()
