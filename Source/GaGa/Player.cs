@@ -250,7 +250,7 @@ namespace GaGa
         {
             get
             {
-                return IsIdle;
+                return isIdle;
             }
         }
 
