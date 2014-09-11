@@ -17,6 +17,9 @@ namespace GaGa
         private readonly NotifyIcon notifyIcon;
         private readonly MediaPlayer player;
 
+        private PlayerStream source;
+        private Boolean isIdle;
+
         private readonly Icon idleIcon;
         private readonly Icon playingIcon;
         private readonly Icon playingMutedIcon;
@@ -26,29 +29,11 @@ namespace GaGa
         private Int32 currentBufferingIcon;
 
         /// <summary>
-        /// Get the current source stream.
-        /// </summary>
-        public PlayerStream Source
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// True when not currently playing.
-        /// </summary>
-        public Boolean IsIdle
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// A media player that takes control of a notifyicon icon,
         /// tooltip and balloon to display status.
         /// </summary>
         /// <param name="icon">
-        /// The notify icon to use.
+        /// The notify icon to use to display status.
         /// </param>
         public Player(NotifyIcon icon)
         {
@@ -60,15 +45,15 @@ namespace GaGa
             player.MediaEnded += OnMediaEnded;
             player.MediaFailed += OnMediaFailed;
 
-            idleIcon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
-            playingIcon = Util.ResourceAsIcon("GaGa.Resources.playing.ico");
-            playingMutedIcon = Util.ResourceAsIcon("GaGa.Resources.playing-muted.ico");
+            idleIcon = Util.ResourceAsIcon("GaGa.Resources.Idle.ico");
+            playingIcon = Util.ResourceAsIcon("GaGa.Resources.Playing.ico");
+            playingMutedIcon = Util.ResourceAsIcon("GaGa.Resources.Playing-muted.ico");
 
             bufferingIcons = new Icon[] {
-                Util.ResourceAsIcon("GaGa.Resources.buffering1.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.buffering2.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.buffering3.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.buffering4.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.Buffering1.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.Buffering2.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.Buffering3.ico"),
+                Util.ResourceAsIcon("GaGa.Resources.Buffering4.ico"),
             };
 
             bufferingIconTimer = new DispatcherTimer();
@@ -76,8 +61,8 @@ namespace GaGa
             bufferingIconTimer.Tick += OnBufferingIconTimerTick;
             currentBufferingIcon = 0;
 
-            Source = null;
-            IsIdle = true;
+            source = null;
+            isIdle = true;
 
             UpdateIcon();
         }
@@ -96,7 +81,7 @@ namespace GaGa
             String text;
 
             // player state
-            if (IsIdle)
+            if (isIdle)
             {
                 icon = idleIcon;
                 text = "Idle";
@@ -116,13 +101,13 @@ namespace GaGa
             text += " - ";
 
             // source state:
-            if (Source == null)
+            if (source == null)
             {
                 text += "No stream selected";
             }
             else
             {
-                text += Source.Name;
+                text += source.Name;
             }
 
             notifyIcon.Icon = icon;
@@ -139,15 +124,15 @@ namespace GaGa
         /// </summary>
         public void Play()
         {
-            // do nothing if there is no source:
-            if (Source == null)
+            // do nothing if there is no current source:
+            if (source == null)
                 return;
 
-            player.Open(Source.Uri);
+            player.Open(source.Uri);
             player.Play();
             player.IsMuted = false;
 
-            IsIdle = false;
+            isIdle = false;
             UpdateIcon();
         }
 
@@ -158,7 +143,7 @@ namespace GaGa
         public void Stop()
         {
             // do nothing if already idle:
-            if (IsIdle)
+            if (isIdle)
                 return;
 
             // corner case:
@@ -176,7 +161,7 @@ namespace GaGa
             bufferingIconTimer.Stop();
             currentBufferingIcon = 0;
 
-            IsIdle = true;
+            isIdle = true;
             UpdateIcon();
         }
 
@@ -187,16 +172,18 @@ namespace GaGa
         /// <param name="stream">Source stream to play.</param>
         public void Play(PlayerStream stream)
         {
-            Source = stream;
+            source = stream;
             Play();
         }
 
         /// <summary>
-        /// Set a given stream as current.
+        /// Stop playing and set a given stream as current.
         /// </summary>
+        /// <param name="stream">Source stream.</param>
         public void Select(PlayerStream stream)
         {
-            Source = stream;
+            Stop();
+            source = stream;
             UpdateIcon();
         }
 
@@ -206,7 +193,7 @@ namespace GaGa
         public void Mute()
         {
             // do nothing if idle or already muted:
-            if (IsIdle || player.IsMuted)
+            if (isIdle || player.IsMuted)
                 return;
 
             player.IsMuted = true;
@@ -219,7 +206,7 @@ namespace GaGa
         public void UnMute()
         {
             // do nothing if idle or not muted:
-            if (IsIdle || !player.IsMuted)
+            if (isIdle || !player.IsMuted)
                 return;
 
             player.IsMuted = false;
@@ -231,7 +218,7 @@ namespace GaGa
         /// </summary>
         public void TogglePlay()
         {
-            if (IsIdle)
+            if (isIdle)
             {
                 Play();
             }
@@ -253,6 +240,28 @@ namespace GaGa
             else
             {
                 Mute();
+            }
+        }
+
+        /// <summary>
+        /// Determine whether the player is currently idle.
+        /// </summary>
+        public Boolean IsIdle
+        {
+            get
+            {
+                return IsIdle;
+            }
+        }
+
+        /// <summary>
+        /// Get the current player stream.
+        /// </summary>
+        public PlayerStream Source
+        {
+            get
+            {
+                return source;
             }
         }
 

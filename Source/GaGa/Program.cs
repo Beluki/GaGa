@@ -18,10 +18,10 @@ namespace GaGa
         [STAThread]
         private static void Main()
         {
-            // default paths for the settings and the streams file:
+            // default path for the settings and the streams file:
             String currentFolder = Util.ApplicationFolder;
             String settingsFilepath = Path.Combine(currentFolder, "GaGa.dat");
-            String streamsFilepath = Path.Combine(currentFolder, "streams.ini");
+            String streamsFilepath = Path.Combine(currentFolder, "Streams.ini");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

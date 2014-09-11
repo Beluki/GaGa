@@ -11,7 +11,7 @@ Left click on the icon toggles play/stop. Middle click (with the mouse wheel)
 toggles mute. Right click opens the menu with a list of streams. The icon
 reflects the current state (e.g. an animation while buffering).
 
-On a modern system, GaGa typically uses about 15 MB of ram and 1% CPU while
+On a modern system, GaGa typically uses about 16 MB of ram and 1% CPU while
 playing. It supports .m3u, .asx, .mp3 and basically everything that Windows
 Media Player supports.
 
@@ -54,7 +54,7 @@ Which produces the following menu:
 
 Scared of mistakes? Don't worry, GaGa will load an alternate menu with
 error details (including exact line) on any error. In the worst-case
-scenario, if you delete your streams.ini file, GaGa will recreate it
+scenario, if you delete your Streams.ini file, GaGa will recreate it
 with a list of default radio streams.
 
 Performance-wise, streams file reloading is usually instant or takes

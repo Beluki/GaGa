@@ -3,6 +3,9 @@ CHANGELOG
 
 * 2014/09/11:
 
+    - The streams filename is now uppercase (e.g. Streams.ini)
+      for consistency with GaGa.exe and GaGa.dat.
+
     - Added a settings file.
       GaGa now remembers the balance, volume and last stream played.
 

@@ -70,10 +70,9 @@ namespace GaGa
         /// </summary>
         /// <param name="value">Object to serialize.</param>
         /// <param name="filepath">Destination path.</param>
-        public static void Serialize<T>(T value, String filepath)
+        public static void Serialize(Object value, String filepath)
         {
             BinaryFormatter formatter = new BinaryFormatter();
-
             using (FileStream fs = new FileStream(filepath, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 formatter.Serialize(fs, value);
@@ -84,17 +83,13 @@ namespace GaGa
         /// Deserialize an object from a binary file.
         /// </summary>
         /// <param name="filepath">File path.</param>
-        public static T Deserialize<T>(String filepath)
+        public static Object Deserialize(String filepath)
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            T result;
-
             using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read))
             {
-                result = (T) formatter.Deserialize(fs);
+                return formatter.Deserialize(fs);
             }
-
-            return result;
         }
 
         ///
@@ -104,7 +99,7 @@ namespace GaGa
         /// <summary>
         /// Clamp a value inclusively beetwen min and max.
         /// </summary>
-        /// <param name="val">Input value.</param>
+        /// <param name="value">Input value.</param>
         /// <param name="min">Maximum value.</param>
         /// <param name="max">Minimum value.</param>
         public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
@@ -138,8 +133,8 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Return the current Windows Aero colorization value as a Color
-        /// or Color.Empty when Aero is not supported.
+        /// Return the current Windows Aero colorization value
+        /// or Color.Empty when Aero is not supported or unable to get it.
         /// </summary>
         public static Color GetCurrentAeroColor()
         {

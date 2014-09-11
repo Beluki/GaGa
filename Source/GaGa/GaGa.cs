@@ -17,19 +17,16 @@ namespace GaGa
 {
     internal class GaGa : ApplicationContext
     {
-        // settings file:
-        private readonly String settingsFilepath;
-        private readonly Settings settings;
-
-        // streams file:
-        private readonly String streamsFilepath;
-        private readonly StreamsFileLoader streamsFileLoader;
-
         // gui components:
         private readonly Container container;
         private readonly NotifyIcon notifyIcon;
         private readonly ToolStripAeroRenderer toolStripRenderer;
-        private readonly ContextMenuStrip menu;
+
+        // settings/streams files:
+        private readonly String settingsFilepath;
+        private readonly Settings settings;
+        private readonly String streamsFilepath;
+        private readonly StreamsFileLoader streamsFileLoader;
 
         // player:
         private readonly Player player;
@@ -53,31 +50,28 @@ namespace GaGa
         /// <param name="filepath">Path to the streams file to use.</param>
         public GaGa(String settingsFilepath, String streamsFilepath)
         {
-            // settings file:
-            this.settingsFilepath = settingsFilepath;
-            settings = SettingsLoad();
-
-            // streams file:
-            this.streamsFilepath = streamsFilepath;
-            streamsFileLoader = new StreamsFileLoader(streamsFilepath, "GaGa.Resources.streams.ini");
-
             // gui components:
             container = new Container();
 
             notifyIcon = new NotifyIcon(container);
             notifyIcon.ContextMenuStrip = new ContextMenuStrip();
             notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
-            notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.idle.ico");
+            notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.Idle.ico");
             notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
 
             toolStripRenderer = new ToolStripAeroRenderer();
+            notifyIcon.ContextMenuStrip.Renderer = toolStripRenderer;
 
-            menu = notifyIcon.ContextMenuStrip;
-            menu.Renderer = toolStripRenderer;
+            // settings/streams files:
+            this.settingsFilepath = settingsFilepath;
+            settings = SettingsLoad();
+            this.streamsFilepath = streamsFilepath;
+            streamsFileLoader = new StreamsFileLoader(streamsFilepath, "GaGa.Resources.Streams.ini");
 
             // player:
             player = new Player(notifyIcon);
+            player.Select(settings.LastPlayerStream);
 
             // streams menu constant items:
             errorOpenItem = new ToolStripMenuItem();
@@ -100,14 +94,14 @@ namespace GaGa
             balanceTrackBar.Label.Text = "Balance";
             balanceTrackBar.TrackBar.Minimum = -10;
             balanceTrackBar.TrackBar.Maximum = 10;
-            balanceTrackBar.TrackBar.Value = 0;
+            balanceTrackBar.TrackBar.Value = settings.LastBalanceTrackBarValue;
             balanceTrackBar.TrackBar.ValueChanged += OnBalanceTrackBarChanged;
 
             volumeTrackBar = new ToolStripLabeledTrackBar();
             volumeTrackBar.Label.Text = "Volume";
             volumeTrackBar.TrackBar.Minimum = 0;
             volumeTrackBar.TrackBar.Maximum = 20;
-            volumeTrackBar.TrackBar.Value = 10;
+            volumeTrackBar.TrackBar.Value = settings.LastVolumeTrackBarValue;
             volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
             // adjust the backcolor to the renderer:
@@ -123,19 +117,13 @@ namespace GaGa
             audioSettingsItem.DropDownItems.Add(balanceTrackBar);
             audioSettingsItem.DropDownItems.Add(volumeTrackBar);
 
+            BalanceUpdate();
+            VolumeUpdate();
+
             // other items:
             exitItem = new ToolStripMenuItem();
             exitItem.Text = "Exit";
             exitItem.Click += OnExitItemClick;
-
-            // apply settings:
-            balanceTrackBar.TrackBar.Value = settings.LastBalanceTrackBarValue;
-            volumeTrackBar.TrackBar.Value = settings.LastVolumeTrackBarValue;
-            player.Select(settings.LastPlayerStream);
-
-            // update:
-            BalanceUpdate();
-            VolumeUpdate();
         }
 
         ///
@@ -173,7 +161,7 @@ namespace GaGa
             {
                 if (File.Exists(settingsFilepath))
                 {
-                    return Util.Deserialize<Settings>(settingsFilepath);
+                    return (Settings) Util.Deserialize(settingsFilepath);
                 }
             }
             catch (Exception exception)
@@ -193,7 +181,7 @@ namespace GaGa
                 MessageBox.Show(text, caption);
             }
 
-            // unable to read, use default:
+            // unable to load, return default settings:
             return new Settings();
         }
 
@@ -204,7 +192,7 @@ namespace GaGa
         {
             try
             {
-                Util.Serialize<Settings>(settings, settingsFilepath);
+                Util.Serialize(settings, settingsFilepath);
             }
             catch (Exception exception)
             {
@@ -214,7 +202,8 @@ namespace GaGa
                     "Exception message: \n" +
                     "{1} \n",
                     settingsFilepath,
-                    exception.Message);
+                    exception.Message
+                );
 
                 String caption = "Error saving settings file";
                 MessageBox.Show(text, caption);
@@ -230,6 +219,8 @@ namespace GaGa
         /// </summary>
         private void MenuUpdate()
         {
+            ContextMenuStrip menu = notifyIcon.ContextMenuStrip;
+
             try
             {
                 menu.Items.Clear();
@@ -262,12 +253,17 @@ namespace GaGa
         /// </summary>
         private void OnMenuOpening(Object sender, CancelEventArgs e)
         {
+            ContextMenuStrip menu = notifyIcon.ContextMenuStrip;
+
+            menu.SuspendLayout();
+
             if (streamsFileLoader.MustReload())
             {
                 MenuUpdate();
             }
 
             toolStripRenderer.UpdateColors();
+            menu.ResumeLayout();
 
             e.Cancel = false;
             notifyIcon.InvokeContextMenu();
@@ -452,13 +448,13 @@ namespace GaGa
         private void OnExitItemClick(Object sender, EventArgs e)
         {
             player.Stop();
-            notifyIcon.Visible = false;
 
             settings.LastBalanceTrackBarValue = balanceTrackBar.TrackBar.Value;
             settings.LastVolumeTrackBarValue = volumeTrackBar.TrackBar.Value;
             settings.LastPlayerStream = player.Source;
             SettingsSave();
 
+            notifyIcon.Visible = false;
             Application.Exit();
         }
     }

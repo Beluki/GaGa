@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace GaGa
 {
-    public class StreamsFileLoader
+    internal class StreamsFileLoader
     {
         private readonly String filepath;
         private readonly String resourcepath;

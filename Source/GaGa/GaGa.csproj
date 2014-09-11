@@ -37,7 +37,7 @@
     <StartupObject />
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\idle.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Idle.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -62,19 +62,19 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\buffering1.ico" />
-    <EmbeddedResource Include="Resources\buffering2.ico" />
-    <EmbeddedResource Include="Resources\buffering3.ico" />
-    <EmbeddedResource Include="Resources\buffering4.ico" />
-    <EmbeddedResource Include="Resources\idle.ico" />
-    <EmbeddedResource Include="Resources\playing-muted.ico" />
-    <EmbeddedResource Include="Resources\playing.ico" />
+    <EmbeddedResource Include="Resources\Buffering1.ico" />
+    <EmbeddedResource Include="Resources\Buffering2.ico" />
+    <EmbeddedResource Include="Resources\Buffering3.ico" />
+    <EmbeddedResource Include="Resources\Buffering4.ico" />
+    <EmbeddedResource Include="Resources\Idle.ico" />
+    <EmbeddedResource Include="Resources\Playing-muted.ico" />
+    <EmbeddedResource Include="Resources\Playing.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\streams.ini" />
+    <EmbeddedResource Include="Resources\Streams.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

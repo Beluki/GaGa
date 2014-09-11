@@ -16,6 +16,10 @@ namespace GaGa.Controls
         private Color menuItemSelected;
         private Color menuItemBorder;
 
+        /// <summary>
+        /// A color table that tries to match the current aero theme
+        /// when rendering selected menu items.
+        /// </summary>
         public AeroColorTable()
         {
             lastAeroColor = Color.Empty;
@@ -30,7 +34,7 @@ namespace GaGa.Controls
         {
             Color aeroColor = Util.GetCurrentAeroColor();
 
-            // unable to read it, fall back to default colors:
+            // unable to read it, fallback to default colors:
             if (aeroColor == Color.Empty)
             {
                 menuItemSelected = base.MenuItemSelected;
@@ -38,7 +42,7 @@ namespace GaGa.Controls
             }
             else
             {
-                // recalculate when needed:
+                // recalculate only when needed:
                 if (aeroColor != lastAeroColor)
                 {
                     lastAeroColor = aeroColor;
@@ -48,23 +52,23 @@ namespace GaGa.Controls
         }
 
         /// <summary>
-        /// Recalculate our color values from a given aero color.
+        /// Recalculate our color values from a given base color.
         /// </summary>
-        private void RecalculateColors(Color aeroColor)
+        private void RecalculateColors(Color baseColor)
         {
-            Double A = (Double) aeroColor.A;
-            Double R = (Double) aeroColor.R;
-            Double G = (Double) aeroColor.G;
-            Double B = (Double) aeroColor.B;
+            Double A = (Double) baseColor.A;
+            Double R = (Double) baseColor.R;
+            Double G = (Double) baseColor.G;
+            Double B = (Double) baseColor.B;
 
-            // aero tends to base light colors on low alpha values
-            // so darken it a bit when too low to be clearly visible:
+            // darken too low alpha for clear visibility:
             if (A < 30)
             {
                 A = 30;
             }
 
-            // now remove alpha, we want an opaque color:
+            // we want an opaque color, so remove alpha
+            // keeping the current color value:
             // c = c * (alpha / 255) + (255 * (1 - (alpha / 255)))
             R = R * (A / 255) + (255 * (1 - (A / 255)));
             G = G * (A / 255) + (255 * (1 - (A / 255)));
@@ -84,6 +88,9 @@ namespace GaGa.Controls
             B = Util.Clamp(B, 0, 255);
 
             Color color = Color.FromArgb((Int32) R, (Int32) G, (Int32) B);
+
+            // right now, both the selected menu and the border use
+            // the same color but we could also darken the border a bit:
             menuItemSelected = color;
             menuItemBorder = color;
         }
@@ -113,6 +120,10 @@ namespace GaGa.Controls
 
     internal class ToolStripAeroRenderer : ToolStripProfessionalRenderer
     {
+        /// <summary>
+        /// A renderer that tries to match the current aero theme
+        /// when rendering selected menu items.
+        /// </summary>
         public ToolStripAeroRenderer() : base(new AeroColorTable())
         {
 
