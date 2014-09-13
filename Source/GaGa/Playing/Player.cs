@@ -177,13 +177,14 @@ namespace GaGa.Playing
         }
 
         /// <summary>
-        /// Set a given stream as current and stop playing.
+        /// Stop playing and set a given stream as current.
         /// </summary>
         /// <param name="stream">Source stream to set as current.</param>
         public void Select(PlayerStream stream)
         {
-            source = stream;
             Stop();
+            source = stream;
+            UpdateIcon();
         }
 
         /// <summary>
