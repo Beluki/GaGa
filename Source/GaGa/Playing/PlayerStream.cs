@@ -6,7 +6,7 @@
 using System;
 
 
-namespace GaGa
+namespace GaGa.Playing
 {
     [Serializable]
     internal class PlayerStream

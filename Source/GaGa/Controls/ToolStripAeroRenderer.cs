@@ -78,14 +78,14 @@ namespace GaGa.Controls
             // those would be indistinguishable from the background:
             if ((R > 220) && (G > 220) && (B > 220))
             {
-                R = 220; G = 220; B = 220;
+                R = G = B = 220;
             }
 
             // we don't want color too close to black
             // those would obscure the text:
-            if ((R < 30) && (G < 30) && (B < 30))
+            if ((R < 50) && (G < 50) && (B < 50))
             {
-                R = 30; G = 30; B = 30;
+                R = G = B = 50;
             }
 
             R = Util.Clamp(R, 0, 255);

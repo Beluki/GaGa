@@ -4,6 +4,9 @@
 
 
 using System;
+using System.IO;
+
+using GaGa.Playing;
 
 
 namespace GaGa
@@ -12,12 +15,12 @@ namespace GaGa
     internal class Settings
     {
         /// <summary>
-        /// Last balance value set in the audio settings menu.
+        /// Last balance value set in the audio menu.
         /// </summary>
         public Int32 LastBalanceTrackBarValue;
 
         /// <summary>
-        /// Last volume value set in the audio settings menu.
+        /// Last volume value set in the audio menu.
         /// </summary>
         public Int32 LastVolumeTrackBarValue;
 

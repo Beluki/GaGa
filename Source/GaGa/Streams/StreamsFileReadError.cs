@@ -6,12 +6,12 @@
 using System;
 
 
-namespace GaGa
+namespace GaGa.Streams
 {
     internal class StreamsFileReadError : Exception
     {
         /// <summary>
-        /// Path to the streams file that triggered the error.
+        /// Path to the file that triggered the error.
         /// </summary>
         public readonly String FilePath;
 
@@ -29,7 +29,7 @@ namespace GaGa
         /// Raised by StreamsFileReader on a reading error.
         /// </summary>
         /// <param name="message">Error message.</param>
-        /// <param name="filepath">Path to the streams file that triggered the error.</param>
+        /// <param name="filepath">Path to the file that triggered the error.</param>
         /// <param name="line">Text for the incorrect line.</param>
         /// <param name="linenumber">Line number where the error happened.</param>
         public StreamsFileReadError(String message, String filepath, String line, Int32 linenumber) : base(message)

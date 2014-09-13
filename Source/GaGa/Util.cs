@@ -7,60 +7,16 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
-
-using Microsoft.Win32;
 
 
 namespace GaGa
 {
     internal static class Util
     {
-        ///
-        /// Contants
-        ///
-
-        /// <summary>
-        /// GetLastWriteTime() returns this when a file is not found.
-        /// </summary>
-        public static readonly DateTime FileNotFoundUtc = DateTime.FromFileTimeUtc(0);
-
-        ///
-        /// Resources
-        ///
-
-        /// <summary>
-        /// Copy an embedded resource to a file.
-        /// </summary>
-        /// <param name="resource">Resource name, including namespace.</param>
-        /// <param name="filepath">Destination path.</param>
-        public static void ResourceCopy(String resource, String filepath)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream source = assembly.GetManifestResourceStream(resource))
-            {
-                using (FileStream target = new FileStream(filepath, FileMode.Create, FileAccess.Write))
-                {
-                    source.CopyTo(target);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Load an embedded resource as an icon.
-        /// </summary>
-        /// <param name="resource">Resource name, including namespace.</param>
-        public static Icon ResourceAsIcon(String resource)
-        {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(resource))
-            {
-                return new Icon(stream);
-            }
-        }
-
         ///
         /// IO
         ///
@@ -93,27 +49,6 @@ namespace GaGa
         }
 
         ///
-        /// Math
-        ///
-
-        /// <summary>
-        /// Clamp a value inclusively between min and max.
-        /// </summary>
-        /// <param name="value">Input value.</param>
-        /// <param name="min">Minimum value.</param>
-        /// <param name="max">Maximum value.</param>
-        public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
-        {
-            if (value.CompareTo(min) < 0)
-                return min;
-
-            if (value.CompareTo(max) > 0)
-                return max;
-
-            return value;
-        }
-
-        ///
         /// MessageBoxes
         ///
 
@@ -129,34 +64,30 @@ namespace GaGa
         }
 
         ///
-        /// OS information
+        /// NotifyIcon extensions
         ///
 
         /// <summary>
-        /// Return the current Windows Aero colorization value
-        /// or Color.Empty when Aero is not supported or unable to get it.
+        /// Show the context menu for the icon at the given location.
         /// </summary>
-        public static Color GetCurrentAeroColor()
+        public static void ShowContextMenuStrip(this NotifyIcon notifyIcon, Point position)
         {
-            try
-            {
-                Object value = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\DWM", "ColorizationColor", null);
+            // we must make it a foreground window
+            // otherwise, an icon is shown in the taskbar:
+            SetForegroundWindow(new HandleRef(notifyIcon.ContextMenuStrip, notifyIcon.ContextMenuStrip.Handle));
 
-                if (value == null)
-                {
-                    return Color.Empty;
-                }
-                else
-                {
-                    return Color.FromArgb((Int32) value);
-                }
-            }
-            // unable to read registry or present but value not an Int32:
-            catch (Exception)
-            {
-                return Color.Empty;
-            }
+            // ContextMenuStrip.Show(int x, int y) doesn't overlap the taskbar
+            // we need "ShowInTaskbar" via reflection:
+            MethodInfo mi = typeof(ContextMenuStrip).GetMethod("ShowInTaskbar",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Object[] parameters = { position.X, position.Y };
+            mi.Invoke(notifyIcon.ContextMenuStrip, parameters);
         }
+
+        ///
+        /// OS information
+        ///
 
         /// <summary>
         /// Get the path for the directory that contains
@@ -170,37 +101,41 @@ namespace GaGa
             }
         }
 
-        ///
-        /// NotifyIcon extensions
-        ///
-
         /// <summary>
-        /// Safely change the icon tooltip text.
-        /// Strings longer than 63 characters are trimmed to 60 characters
-        /// with a "..." suffix.
+        /// Get the current mouse position.
         /// </summary>
-        /// <param name="text">Tooltip text to display.</param>
-        public static void SetToolTipText(this NotifyIcon notifyIcon, String text)
+        public static Point MousePosition
         {
-            if (text.Length > 63)
+            get
             {
-                text = text.Substring(0, 60) + "...";
+                POINT pt;
+                GetCursorPos(out pt);
+
+                return pt;
             }
-
-            notifyIcon.Text = text;
         }
 
-        /// <summary>
-        /// Show the context menu for the icon.
-        /// </summary>
-        public static void InvokeContextMenu(this NotifyIcon notifyIcon)
+        ///
+        /// Private Windows API declarations
+        ///
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
         {
-            MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu",
-                BindingFlags.Instance | BindingFlags.NonPublic
-            );
+            public int X;
+            public int Y;
 
-            mi.Invoke(notifyIcon, null);
+            public static implicit operator Point(POINT point)
+            {
+                return new Point(point.X, point.Y);
+            }
         }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        private static extern Boolean GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        private static extern Boolean SetForegroundWindow(HandleRef hWnd);
     }
 }
 

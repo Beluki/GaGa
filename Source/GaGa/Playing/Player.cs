@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 
-namespace GaGa
+namespace GaGa.Playing
 {
     internal class Player
     {
@@ -45,15 +45,15 @@ namespace GaGa
             player.MediaEnded += OnMediaEnded;
             player.MediaFailed += OnMediaFailed;
 
-            idleIcon = Util.ResourceAsIcon("GaGa.Resources.Idle.ico");
-            playingIcon = Util.ResourceAsIcon("GaGa.Resources.Playing.ico");
-            playingMutedIcon = Util.ResourceAsIcon("GaGa.Resources.Playing-muted.ico");
+            idleIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Idle.ico");
+            playingIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Playing.ico");
+            playingMutedIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Playing-muted.ico");
 
             bufferingIcons = new Icon[] {
-                Util.ResourceAsIcon("GaGa.Resources.Buffering1.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.Buffering2.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.Buffering3.ico"),
-                Util.ResourceAsIcon("GaGa.Resources.Buffering4.ico"),
+                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering1.ico"),
+                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering2.ico"),
+                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering3.ico"),
+                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering4.ico"),
             };
 
             bufferingIconTimer = new DispatcherTimer();

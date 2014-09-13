@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using mINI;
 
 
-namespace GaGa
+namespace GaGa.Streams
 {
     internal class StreamsFileReader : INIReader
     {
@@ -72,12 +72,12 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Concise helper to throw StreamsFileReadError exceptions.
+        /// Concise helper to create StreamsFileReadError exceptions.
         /// </summary>
         /// <param name="message">Error message.</param>
-        private void ThrowReadError(String message)
+        private StreamsFileReadError ReadError(String message)
         {
-            throw new StreamsFileReadError(
+            return new StreamsFileReadError(
                 message,
                 filepath,
                 currentLine,
@@ -90,7 +90,7 @@ namespace GaGa
         /// </summary>
         protected override void OnSectionEmpty()
         {
-            ThrowReadError("Empty menu name.");
+            throw ReadError("Empty menu name.");
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace GaGa
         /// </summary>
         protected override void OnSubSectionEmpty(String path)
         {
-            ThrowReadError("Empty submenu name.");
+            throw ReadError("Empty submenu name.");
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace GaGa
         /// </summary>
         protected override void OnKeyEmpty(String value)
         {
-            ThrowReadError("Empty stream name.");
+            throw ReadError("Empty stream name.");
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace GaGa
         /// </summary>
         protected override void OnValueEmpty(String key)
         {
-            ThrowReadError("Empty stream URI.");
+            throw ReadError("Empty stream URI.");
         }
 
         /// <summary>
@@ -122,11 +122,12 @@ namespace GaGa
         /// </summary>
         protected override void OnUnknown(String line)
         {
-            ThrowReadError("Invalid syntax.");
+            throw ReadError("Invalid syntax.");
         }
 
         /// <summary>
-        /// On an empty line, add and go back to the menu root.
+        /// On an empty line, add collected items
+        /// and go back to the menu root.
         /// </summary>
         protected override void OnEmpty()
         {
@@ -135,7 +136,8 @@ namespace GaGa
         }
 
         /// <summary>
-        /// On a new section, add and go back to the menu root.
+        /// On a new section, add collected items
+        /// and go back to the menu root.
         /// </summary>
         protected override void OnSection(String section)
         {
@@ -144,14 +146,15 @@ namespace GaGa
         }
 
         /// <summary>
-        /// Add subsections as submenus and descend into them.
+        /// On subsections, add collected item
+        /// and descend into them.
         /// </summary>
         protected override void OnSubSection(String subsection, String path)
         {
             ToolStripMenuItem submenu;
             seenSubmenues.TryGetValue(path, out submenu);
 
-            // not seen, create and add to the current menu
+            // not seen, create and add as a submenu to the current menu
             // otherwise it's a duplicate and has already been added:
             if (submenu == null)
             {
@@ -178,7 +181,7 @@ namespace GaGa
             }
             catch (UriFormatException exception)
             {
-                ThrowReadError(exception.Message);
+                throw ReadError(exception.Message);
             }
 
             currentMenuItems.Add(item);
@@ -208,7 +211,7 @@ namespace GaGa
                     ReadLine(line);
                 }
 
-                // add pending items for the last section:
+                // add pending items for the last submenu:
                 AddCurrentMenuItems();
             }
             finally

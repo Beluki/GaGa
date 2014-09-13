@@ -1,6 +1,11 @@
 
 CHANGELOG
 
+* 2014/09/14:
+
+    - The menu position should now be correct even if the mouse
+      is moved while it's being reloaded.
+
 * 2014/09/11:
 
     - The streams filename is now uppercase (e.g. Streams.ini)

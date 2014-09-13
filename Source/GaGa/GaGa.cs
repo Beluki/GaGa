@@ -11,6 +11,8 @@ using System.IO;
 using System.Windows.Forms;
 
 using GaGa.Controls;
+using GaGa.Playing;
+using GaGa.Streams;
 
 
 namespace GaGa
@@ -19,12 +21,14 @@ namespace GaGa
     {
         // gui components:
         private readonly Container container;
-        private readonly NotifyIcon notifyIcon;
         private readonly ToolStripAeroRenderer toolStripRenderer;
+        private readonly NotifyIcon notifyIcon;
 
-        // settings/streams files:
+        // settings:
         private readonly String settingsFilepath;
         private readonly Settings settings;
+
+        // streams:
         private readonly String streamsFilepath;
         private readonly StreamsFileLoader streamsFileLoader;
 
@@ -36,8 +40,8 @@ namespace GaGa
         private readonly ToolStripMenuItem errorReadItem;
         private readonly ToolStripMenuItem editItem;
 
-        // audio settings items:
-        private readonly ToolStripMenuItem audioSettingsItem;
+        // audio submenu:
+        private readonly ToolStripMenuItem audioMenuItem;
         private readonly ToolStripLabeledTrackBar volumeTrackBar;
         private readonly ToolStripLabeledTrackBar balanceTrackBar;
 
@@ -58,21 +62,22 @@ namespace GaGa
             // gui components:
             container = new Container();
 
+            toolStripRenderer = new ToolStripAeroRenderer();
+
             notifyIcon = new NotifyIcon(container);
             notifyIcon.ContextMenuStrip = new ContextMenuStrip();
             notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
-            notifyIcon.Icon = Util.ResourceAsIcon("GaGa.Resources.Idle.ico");
+            notifyIcon.ContextMenuStrip.Renderer = toolStripRenderer;
             notifyIcon.MouseClick += OnIconMouseClick;
             notifyIcon.Visible = true;
 
-            toolStripRenderer = new ToolStripAeroRenderer();
-            notifyIcon.ContextMenuStrip.Renderer = toolStripRenderer;
-
-            // settings/streams files:
+            // settings:
             this.settingsFilepath = settingsFilepath;
             settings = SettingsLoad();
+
+            // streams:
             this.streamsFilepath = streamsFilepath;
-            streamsFileLoader = new StreamsFileLoader(streamsFilepath, "GaGa.Resources.Streams.ini");
+            streamsFileLoader = new StreamsFileLoader(streamsFilepath);
 
             // player:
             player = new Player(notifyIcon);
@@ -91,9 +96,9 @@ namespace GaGa
             editItem.Text = "Edit streams file";
             editItem.Click += OnEditItemClick;
 
-            // audio settings items:
-            audioSettingsItem = new ToolStripMenuItem();
-            audioSettingsItem.Text = "Audio settings";
+            // audio submenu:
+            audioMenuItem = new ToolStripMenuItem();
+            audioMenuItem.Text = "Audio";
 
             balanceTrackBar = new ToolStripLabeledTrackBar();
             balanceTrackBar.Label.Text = "Balance";
@@ -119,8 +124,8 @@ namespace GaGa
             volumeTrackBar.Label.BackColor = back;
             volumeTrackBar.TrackBar.BackColor = back;
 
-            audioSettingsItem.DropDownItems.Add(balanceTrackBar);
-            audioSettingsItem.DropDownItems.Add(volumeTrackBar);
+            audioMenuItem.DropDownItems.Add(balanceTrackBar);
+            audioMenuItem.DropDownItems.Add(volumeTrackBar);
 
             BalanceUpdate();
             VolumeUpdate();
@@ -187,7 +192,7 @@ namespace GaGa
                 MessageBox.Show(text, caption);
             }
 
-            // unable to load or doesn't exist:
+            // unable to load or doesn't exist, use defaults:
             return new Settings();
         }
 
@@ -250,7 +255,7 @@ namespace GaGa
 
             menu.Items.Add(editItem);
             menu.Items.Add("-");
-            menu.Items.Add(audioSettingsItem);
+            menu.Items.Add(audioMenuItem);
             menu.Items.Add(exitItem);
         }
 
@@ -260,8 +265,11 @@ namespace GaGa
         /// </summary>
         private void OnMenuOpening(Object sender, CancelEventArgs e)
         {
-            ContextMenuStrip menu = notifyIcon.ContextMenuStrip;
-            menu.SuspendLayout();
+            // get the mouse position *before* doing anything
+            // because it can move while we are reloading the menu:
+            Point position = Util.MousePosition;
+
+            notifyIcon.ContextMenuStrip.SuspendLayout();
 
             if (streamsFileLoader.MustReload())
             {
@@ -269,10 +277,10 @@ namespace GaGa
             }
 
             toolStripRenderer.UpdateColors();
+            notifyIcon.ContextMenuStrip.ResumeLayout();
 
-            menu.ResumeLayout();
             e.Cancel = false;
-            notifyIcon.InvokeContextMenu();
+            notifyIcon.ShowContextMenuStrip(position);
         }
 
         ///
@@ -323,7 +331,7 @@ namespace GaGa
         {
             if (player.Source == null)
             {
-                notifyIcon.InvokeContextMenu();
+                notifyIcon.ShowContextMenuStrip(Util.MousePosition);
             }
             else
             {
@@ -339,7 +347,7 @@ namespace GaGa
         {
             if (player.IsIdle)
             {
-                notifyIcon.InvokeContextMenu();
+                notifyIcon.ShowContextMenuStrip(Util.MousePosition);
             }
             else
             {

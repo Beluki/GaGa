@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{8C6C6129-951A-42E1-92D0-276AE8EDB7E2}</ProjectGuid>
+    <ProjectGuid>{42DFF328-2D49-4FFB-BDF3-C3EF596A3816}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GaGa</RootNamespace>
@@ -37,7 +37,7 @@
     <StartupObject />
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Idle.ico</ApplicationIcon>
+    <ApplicationIcon>Playing\Resources\Idle.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -49,32 +49,35 @@
   <ItemGroup>
     <Compile Include="Controls\ToolStripAeroRenderer.cs" />
     <Compile Include="Controls\ToolStripLabeledTrackBar.cs" />
+    <Compile Include="Controls\Util.cs" />
     <Compile Include="GaGa.cs" />
-    <Compile Include="mINI\mINI.cs" />
-    <Compile Include="Player.cs" />
-    <Compile Include="PlayerStream.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="StreamsFileLoader.cs" />
-    <Compile Include="StreamsFileReader.cs" />
-    <Compile Include="StreamsFileReadError.cs" />
+    <Compile Include="Libraries\mINI\mINI.cs" />
+    <Compile Include="Playing\Player.cs" />
+    <Compile Include="Playing\PlayerStream.cs" />
+    <Compile Include="Playing\Util.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Streams\StreamsFileLoader.cs" />
+    <Compile Include="Streams\StreamsFileReader.cs" />
+    <Compile Include="Streams\StreamsFileReadError.cs" />
+    <Compile Include="Streams\Util.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Buffering1.ico" />
-    <EmbeddedResource Include="Resources\Buffering2.ico" />
-    <EmbeddedResource Include="Resources\Buffering3.ico" />
-    <EmbeddedResource Include="Resources\Buffering4.ico" />
-    <EmbeddedResource Include="Resources\Idle.ico" />
-    <EmbeddedResource Include="Resources\Playing-muted.ico" />
-    <EmbeddedResource Include="Resources\Playing.ico" />
+    <EmbeddedResource Include="Streams\Resources\Streams.ini" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Streams.ini" />
+    <EmbeddedResource Include="Playing\Resources\Buffering1.ico" />
+    <EmbeddedResource Include="Playing\Resources\Buffering2.ico" />
+    <EmbeddedResource Include="Playing\Resources\Buffering3.ico" />
+    <EmbeddedResource Include="Playing\Resources\Buffering4.ico" />
+    <EmbeddedResource Include="Playing\Resources\Idle.ico" />
+    <EmbeddedResource Include="Playing\Resources\Playing-muted.ico" />
+    <EmbeddedResource Include="Playing\Resources\Playing.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
