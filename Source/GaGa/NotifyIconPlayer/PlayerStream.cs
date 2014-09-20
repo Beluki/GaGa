@@ -6,7 +6,7 @@
 using System;
 
 
-namespace GaGa.Playing
+namespace GaGa.NotifyIconPlayer
 {
     [Serializable]
     internal class PlayerStream
@@ -22,7 +22,7 @@ namespace GaGa.Playing
         public readonly Uri Uri;
 
         /// <summary>
-        /// Represents a playable media stream.
+        /// Represents a named media stream.
         /// </summary>
         /// <param name="name">Stream name.</param>
         /// <param name="uri">Streaming URI.</param>

@@ -11,13 +11,15 @@ using System.Windows.Forms;
 namespace GaGa.Controls
 {
     [System.ComponentModel.DesignerCategory("")]
-    internal class LabeledTrackBar : Panel
+    internal class ToolStripLabeledTrackBar : ToolStripControlHost
     {
         public Label Label;
         public TrackBar TrackBar;
 
-        public LabeledTrackBar()
+        public ToolStripLabeledTrackBar() : base(new Panel())
         {
+            Panel panel = (Panel) this.Control;
+
             Label = new Label();
             Label.Location = new Point(0, 0);
 
@@ -29,25 +31,10 @@ namespace GaGa.Controls
             TrackBar.Height = (Int32) (TrackBar.PreferredSize.Height * 0.65);
             TrackBar.Width = (Int32) (TrackBar.PreferredSize.Width * 1.2);
 
-            Controls.Add(Label);
-            Controls.Add(TrackBar);
+            panel.Controls.Add(Label);
+            panel.Controls.Add(TrackBar);
 
             Width = Math.Max(Label.Width, TrackBar.Width);
-        }
-    }
-
-    [System.ComponentModel.DesignerCategory("")]
-    internal class ToolStripLabeledTrackBar : ToolStripControlHost
-    {
-        public Label Label;
-        public TrackBar TrackBar;
-
-        public ToolStripLabeledTrackBar() : base(new LabeledTrackBar())
-        {
-            LabeledTrackBar control = (LabeledTrackBar) this.Control;
-
-            Label = control.Label;
-            TrackBar = control.TrackBar;
         }
     }
 }

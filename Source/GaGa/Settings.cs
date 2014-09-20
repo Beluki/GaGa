@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 
-using GaGa.Playing;
+using GaGa.NotifyIconPlayer;
 
 
 namespace GaGa

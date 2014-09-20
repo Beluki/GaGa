@@ -8,7 +8,7 @@ using System.IO;
 using System.Reflection;
 
 
-namespace GaGa.Streams
+namespace GaGa.StreamsFile
 {
     internal static class Util
     {

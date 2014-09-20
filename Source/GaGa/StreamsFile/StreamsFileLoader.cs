@@ -8,7 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 
 
-namespace GaGa.Streams
+namespace GaGa.StreamsFile
 {
     internal class StreamsFileLoader
     {
@@ -29,7 +29,7 @@ namespace GaGa.Streams
         {
             this.filepath = filepath;
 
-            resourcepath = "GaGa.Streams.Resources.Streams.ini";
+            resourcepath = "GaGa.StreamsFile.Resources.Streams.ini";
             reader = new StreamsFileReader();
             lastUpdated = DateTime.MinValue;
         }
@@ -44,7 +44,6 @@ namespace GaGa.Streams
             {
                 return lastUpdated != File.GetLastWriteTimeUtc(filepath);
             }
-
             // GetLastWriteTime() can raise exceptions
             // despite returning a date when the file does not exist:
             catch (Exception)
@@ -87,7 +86,6 @@ namespace GaGa.Streams
                 reader.Read(filepath, menu, onClick);
                 lastUpdated = lastWriteTime;
             }
-
             // update time on parsing errors
             // the syntax will still be wrong until the file changes:
             catch (StreamsFileReadError)

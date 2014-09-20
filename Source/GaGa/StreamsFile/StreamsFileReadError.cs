@@ -6,7 +6,7 @@
 using System;
 
 
-namespace GaGa.Streams
+namespace GaGa.StreamsFile
 {
     internal class StreamsFileReadError : Exception
     {

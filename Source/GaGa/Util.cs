@@ -72,17 +72,22 @@ namespace GaGa
         /// </summary>
         public static void ShowContextMenuStrip(this NotifyIcon notifyIcon, Point position)
         {
+            ContextMenuStrip menu = notifyIcon.ContextMenuStrip;
+
+            // bail out if there is no menu:
+            if (menu == null)
+                return;
+
             // we must make it a foreground window
             // otherwise, an icon is shown in the taskbar:
-            SetForegroundWindow(new HandleRef(notifyIcon.ContextMenuStrip, notifyIcon.ContextMenuStrip.Handle));
+            SetForegroundWindow(new HandleRef(menu, menu.Handle));
 
-            // ContextMenuStrip.Show(int x, int y) doesn't overlap the taskbar
+            // ContextMenuStrip.Show(x, y) doesn't overlap the taskbar
             // we need "ShowInTaskbar" via reflection:
             MethodInfo mi = typeof(ContextMenuStrip).GetMethod("ShowInTaskbar",
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
-            Object[] parameters = { position.X, position.Y };
-            mi.Invoke(notifyIcon.ContextMenuStrip, parameters);
+            mi.Invoke(menu, new Object[] { position.X, position.Y });
         }
 
         ///
@@ -110,8 +115,7 @@ namespace GaGa
             {
                 POINT pt;
                 GetCursorPos(out pt);
-
-                return pt;
+                return new Point(pt.X, pt.Y);
             }
         }
 
@@ -122,19 +126,22 @@ namespace GaGa
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT
         {
-            public int X;
-            public int Y;
+            public Int32 X;
+            public Int32 Y;
 
-            public static implicit operator Point(POINT point)
+            public POINT(Int32 x, Int32 y)
             {
-                return new Point(point.X, point.Y);
+                X = x;
+                Y = y;
             }
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        private static extern Boolean GetCursorPos(out POINT lpPoint);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern Boolean GetCursorPos(out POINT pt);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern Boolean SetForegroundWindow(HandleRef hWnd);
     }
 }

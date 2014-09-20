@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using mINI;
 
 
-namespace GaGa.Streams
+namespace GaGa.StreamsFile
 {
     internal class StreamsFileReader : INIReader
     {
@@ -146,8 +146,8 @@ namespace GaGa.Streams
         }
 
         /// <summary>
-        /// On subsections, add collected item
-        /// and descend into them.
+        /// On a subsection, add collected items
+        /// create a submenu and descend into it.
         /// </summary>
         protected override void OnSubSection(String subsection, String path)
         {

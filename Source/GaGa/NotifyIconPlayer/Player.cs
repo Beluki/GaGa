@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 
 
-namespace GaGa.Playing
+namespace GaGa.NotifyIconPlayer
 {
     internal class Player
     {
@@ -45,18 +45,18 @@ namespace GaGa.Playing
             player.MediaEnded += OnMediaEnded;
             player.MediaFailed += OnMediaFailed;
 
-            idleIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Idle.ico");
-            playingIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Playing.ico");
-            playingMutedIcon = Util.ResourceAsIcon("GaGa.Playing.Resources.Playing-muted.ico");
+            idleIcon = Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Idle.ico");
+            playingIcon = Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Playing.ico");
+            playingMutedIcon = Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Playing-muted.ico");
 
             bufferingIcons = new Icon[] {
-                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering1.ico"),
-                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering2.ico"),
-                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering3.ico"),
-                Util.ResourceAsIcon("GaGa.Playing.Resources.Buffering4.ico"),
+                Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Buffering1.ico"),
+                Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Buffering2.ico"),
+                Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Buffering3.ico"),
+                Util.ResourceAsIcon("GaGa.NotifyIconPlayer.Resources.Buffering4.ico"),
             };
 
-            bufferingIconTimer = new DispatcherTimer();
+            bufferingIconTimer = new DispatcherTimer(DispatcherPriority.Background);
             bufferingIconTimer.Interval = TimeSpan.FromMilliseconds(300);
             bufferingIconTimer.Tick += OnBufferingIconTimerTick;
             currentBufferingIcon = 0;
@@ -178,6 +178,7 @@ namespace GaGa.Playing
 
         /// <summary>
         /// Stop playing and set a given stream as current.
+        /// Unmutes the player.
         /// </summary>
         /// <param name="stream">Source stream to set as current.</param>
         public void Select(PlayerStream stream)
@@ -322,14 +323,14 @@ namespace GaGa.Playing
         /// </summary>
         private void OnBufferingIconTimerTick(Object sender, EventArgs e)
         {
-            // only change the icon when NOT muted
+            // change the icon when NOT muted
             // the mute icon has priority over the buffering icons:
             if (!player.IsMuted)
             {
                 notifyIcon.Icon = bufferingIcons[currentBufferingIcon];
             }
 
-            // but keep the animation always running:
+            // keep the animation always running:
             currentBufferingIcon++;
             if (currentBufferingIcon == bufferingIcons.Length)
             {

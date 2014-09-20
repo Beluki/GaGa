@@ -42,7 +42,7 @@ namespace GaGa.Controls
             }
             else
             {
-                // recalculate only when needed:
+                // recalculate when needed:
                 if (aeroColor != lastAeroColor)
                 {
                     lastAeroColor = aeroColor;
@@ -68,7 +68,7 @@ namespace GaGa.Controls
             }
 
             // we want an opaque color, so remove alpha
-            // keeping the current color value:
+            // but keep the current color value:
             // c = c * (alpha / 255) + (255 * (1 - (alpha / 255)))
             R = R * (A / 255) + (255 * (1 - (A / 255)));
             G = G * (A / 255) + (255 * (1 - (A / 255)));

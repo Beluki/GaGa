@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Windows.Forms;
 
 
-namespace GaGa.Playing
+namespace GaGa.NotifyIconPlayer
 {
     internal static class Util
     {

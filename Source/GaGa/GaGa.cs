@@ -11,8 +11,8 @@ using System.IO;
 using System.Windows.Forms;
 
 using GaGa.Controls;
-using GaGa.Playing;
-using GaGa.Streams;
+using GaGa.NotifyIconPlayer;
+using GaGa.StreamsFile;
 
 
 namespace GaGa
@@ -85,15 +85,15 @@ namespace GaGa
 
             // streams menu constant items:
             errorOpenItem = new ToolStripMenuItem();
-            errorOpenItem.Text = "Error opening streams file";
+            errorOpenItem.Text = "Error opening streams file (click for details)";
             errorOpenItem.Click += OnErrorOpenItemClick;
 
             errorReadItem = new ToolStripMenuItem();
-            errorReadItem.Text = "Error reading streams file";
+            errorReadItem.Text = "Error reading streams file (click for details)";
             errorReadItem.Click += OnErrorReadItemClick;
 
             editItem = new ToolStripMenuItem();
-            editItem.Text = "Edit streams file";
+            editItem.Text = "&Edit streams file";
             editItem.Click += OnEditItemClick;
 
             // audio submenu:
@@ -132,7 +132,7 @@ namespace GaGa
 
             // other items:
             exitItem = new ToolStripMenuItem();
-            exitItem.Text = "Exit";
+            exitItem.Text = "E&xit";
             exitItem.Click += OnExitItemClick;
         }
 
@@ -269,6 +269,7 @@ namespace GaGa
             // because it can move while we are reloading the menu:
             Point position = Util.MousePosition;
 
+            // suspend/resume layout before/after reloading:
             notifyIcon.ContextMenuStrip.SuspendLayout();
 
             if (streamsFileLoader.MustReload())
@@ -277,8 +278,8 @@ namespace GaGa
             }
 
             toolStripRenderer.UpdateColors();
-            notifyIcon.ContextMenuStrip.ResumeLayout();
 
+            notifyIcon.ContextMenuStrip.ResumeLayout();
             e.Cancel = false;
             notifyIcon.ShowContextMenuStrip(position);
         }
