@@ -2,7 +2,7 @@
 ## About
 
 GaGa is a very lightweight, simple online radio player that runs as an icon
-on the Windows tray. It's similar to [RadioTray][] for Linux. Here is a
+on the Windows tray. It's similar to [RadioTray][] for Linux. Here are two
 screenshot:
 
 ![Screenshot1](https://raw.github.com/Beluki/GaGa/master/Screenshot/Screenshot1.png)
@@ -10,6 +10,9 @@ screenshot:
 Left click on the icon toggles play/stop. Middle click (with the mouse wheel)
 toggles mute. Right click opens the menu with a list of streams. The icon
 reflects the current state (e.g. an animation while buffering).
+
+GaGa also implements global hotkeys using multimedia keys. Toggle them on
+or off in the options submenu if your keyboard has them.
 
 On a modern system, GaGa typically uses about 16 MB of ram and 1% CPU while
 playing. It supports .m3u, .asx, .mp3 and basically everything that Windows
@@ -93,10 +96,10 @@ will work, although I suggest something better such as [Notepad2][] or
 
 ## Status
 
-There are no known bugs in GaGa. I may still add new features. Nice things
-to have would be .pls format support, being able to change the streams file
-location (or support per-user files) and global hotkeys (using multimedia keys).
-Contributions and ideas are welcome, as are bug reports.
+This program is finished!
+
+GaGa is feature-complete and has no known bugs. Unless issues are reported
+I plan no further development on it other than maintenance.
 
 ## License
 
