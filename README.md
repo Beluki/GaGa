@@ -3,7 +3,7 @@
 
 GaGa is a very lightweight, simple online radio player that runs as an icon
 on the Windows tray. It's similar to [RadioTray][] for Linux. Here are two
-screenshot:
+screenshots:
 
 ![Screenshot1](https://raw.github.com/Beluki/GaGa/master/Screenshot/Screenshot1.png)
 
