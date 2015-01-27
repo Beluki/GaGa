@@ -57,7 +57,7 @@ namespace GaGa.Controls
                     return Color.FromArgb((Int32) value);
                 }
             }
-            // unable to read registry or present but value not an Int32:
+            // unable to read registry or invalid value:
             catch (Exception)
             {
                 return Color.Empty;

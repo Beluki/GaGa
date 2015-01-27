@@ -249,9 +249,7 @@ namespace LowKey
                 throw new KeyboardHookException("Invalid hotkey name.");
 
             if (namesToHotkeys.ContainsKey(name))
-                throw new KeyboardHookException(
-                    String.Format("Hotkey name already registered: {0}.", name)
-                );
+                throw new KeyboardHookException(String.Format("Duplicate hotkey name: {0}.", name));
 
             // check key code and modifiers:
             Int32 vkCode = (Int32) key;
@@ -259,16 +257,16 @@ namespace LowKey
             // known base key:
             if (hotkeys.ContainsKey(vkCode))
             {
-                HashSet<Keys> currentModifiers = hotkeys[vkCode];
-
                 // check that modifiers are new:
+                HashSet<Keys> currentModifiers = hotkeys[vkCode];
                 if (currentModifiers.Contains(modifiers))
                 {
-                    Hotkey previous = new Hotkey(key, modifiers);
+                    Hotkey previousHotkey = new Hotkey(key, modifiers);
                     throw new KeyboardHookException(
-                        String.Format("Hotkey: {0} already registered as: {1}.",
+                        String.Format(
+                            "Hotkey: {0} already registered as: {1}.",
                             name,
-                            hotkeysToNames[previous]
+                            hotkeysToNames[previousHotkey]
                         )
                     );
                 }
@@ -302,9 +300,7 @@ namespace LowKey
                 throw new KeyboardHookException("Invalid hotkey name.");
 
             if (!namesToHotkeys.ContainsKey(name))
-                throw new KeyboardHookException(
-                    String.Format("Unknown hotkey name: {0}.", name)
-                );
+                throw new KeyboardHookException(String.Format("Unknown hotkey name: {0}.", name));
 
             Hotkey hotkey = namesToHotkeys[name];
 
@@ -359,9 +355,7 @@ namespace LowKey
             // don't hook twice:
             if (hookID != IntPtr.Zero)
             {
-                throw new KeyboardHookException(
-                    "The keyboard hook is already active. Call Unhook() first."
-                );
+                throw new KeyboardHookException("Keyboard hook already active. Call Unhook() first.");
             }
 
             using (Process process = Process.GetCurrentProcess())
@@ -374,9 +368,7 @@ namespace LowKey
                     // when SetWindowsHookEx fails, the result is NULL:
                     if (hookID == IntPtr.Zero)
                     {
-                        throw new KeyboardHookException(
-                            "SetWindowsHookEx() failed: " + LastWin32Error()
-                        );
+                        throw new KeyboardHookException("SetWindowsHookEx() failed: " + LastWin32Error());
                     }
                 }
             }
@@ -390,17 +382,13 @@ namespace LowKey
             // not hooked:
             if (hookID == IntPtr.Zero)
             {
-                throw new KeyboardHookException(
-                    "The keyboard hook is not currently active. Call Hook() first."
-                );
+                throw new KeyboardHookException("Keyboard hook not currently active. Call Hook() first.");
             }
 
             // when UnhookWindowsHookEx fails, the result is false:
             if (!UnhookWindowsHookEx(hookID))
             {
-                throw new KeyboardHookException(
-                    "UnhookWindowsHookEx() failed: " + LastWin32Error()
-                );
+                throw new KeyboardHookException("UnhookWindowsHookEx() failed: " + LastWin32Error());
             }
 
             hookID = IntPtr.Zero;
@@ -445,20 +433,19 @@ namespace LowKey
 
                             KeyboardHookEventArgs e = new KeyboardHookEventArgs(name, key, modifiers);
 
-                            // call the appropriate event handler using the
-                            // current dispatcher:
+                            // call the appropriate event handler using the current dispatcher:
                             if (msg == WM_KEYUP || msg == WM_SYSKEYUP)
                             {
                                 if (HotkeyUp != null)
                                 {
-                                    dispatcher.BeginInvoke(HotkeyUp, new Object[] { null, e });
+                                    dispatcher.BeginInvoke(HotkeyUp, new Object[] { instance, e });
                                 }
                             }
                             else
                             {
                                 if (HotkeyDown != null)
                                 {
-                                    dispatcher.BeginInvoke(HotkeyDown, new Object[] { null, e });
+                                    dispatcher.BeginInvoke(HotkeyDown, new Object[] { instance, e });
                                 }
                             }
                         }

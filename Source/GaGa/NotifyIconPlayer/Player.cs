@@ -29,7 +29,7 @@ namespace GaGa.NotifyIconPlayer
         private Int32 currentBufferingIcon;
 
         /// <summary>
-        /// A media player that takes control of a notifyicon icon,
+        /// A media player that takes control of a NotifyIcon icon,
         /// tooltip and balloon to display status.
         /// </summary>
         /// <param name="icon">

@@ -14,6 +14,8 @@ using GaGa.Controls;
 using GaGa.NotifyIconPlayer;
 using GaGa.StreamsFile;
 
+using LowKey;
+
 
 namespace GaGa
 {
@@ -26,7 +28,7 @@ namespace GaGa
 
         // settings:
         private readonly String settingsFilepath;
-        private readonly Settings settings;
+        private readonly GaGaSettings settings;
 
         // streams:
         private readonly String streamsFilepath;
@@ -35,18 +37,21 @@ namespace GaGa
         // player:
         private readonly Player player;
 
-        // streams menu constant items:
+        // constant menu items:
         private readonly ToolStripMenuItem errorOpenItem;
         private readonly ToolStripMenuItem errorReadItem;
         private readonly ToolStripMenuItem editItem;
+        private readonly ToolStripMenuItem exitItem;
 
         // audio submenu:
         private readonly ToolStripMenuItem audioMenuItem;
         private readonly ToolStripLabeledTrackBar volumeTrackBar;
         private readonly ToolStripLabeledTrackBar balanceTrackBar;
 
-        // other menu items:
-        private readonly ToolStripMenuItem exitItem;
+        // options submenu:
+        private readonly ToolStripMenuItem optionsMenuItem;
+        private readonly ToolStripMenuItem optionsEnableAutoPlayItem;
+        private readonly ToolStripMenuItem optionsEnableMultimediaKeysItem;
 
         /// <summary>
         /// GaGa implementation.
@@ -81,9 +86,8 @@ namespace GaGa
 
             // player:
             player = new Player(notifyIcon);
-            player.Select(settings.LastPlayerStream);
 
-            // streams menu constant items:
+            // constant menu items:
             errorOpenItem = new ToolStripMenuItem();
             errorOpenItem.Text = "Error opening streams file (click for details)";
             errorOpenItem.Click += OnErrorOpenItemClick;
@@ -96,6 +100,10 @@ namespace GaGa
             editItem.Text = "&Edit streams file";
             editItem.Click += OnEditItemClick;
 
+            exitItem = new ToolStripMenuItem();
+            exitItem.Text = "E&xit";
+            exitItem.Click += OnExitItemClick;
+
             // audio submenu:
             audioMenuItem = new ToolStripMenuItem();
             audioMenuItem.Text = "Audio";
@@ -104,14 +112,12 @@ namespace GaGa
             balanceTrackBar.Label.Text = "Balance";
             balanceTrackBar.TrackBar.Minimum = -10;
             balanceTrackBar.TrackBar.Maximum = 10;
-            balanceTrackBar.TrackBar.Value = settings.LastBalanceTrackBarValue;
             balanceTrackBar.TrackBar.ValueChanged += OnBalanceTrackBarChanged;
 
             volumeTrackBar = new ToolStripLabeledTrackBar();
             volumeTrackBar.Label.Text = "Volume";
             volumeTrackBar.TrackBar.Minimum = 0;
             volumeTrackBar.TrackBar.Maximum = 20;
-            volumeTrackBar.TrackBar.Value = settings.LastVolumeTrackBarValue;
             volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
             // adjust the backcolor to the renderer:
@@ -127,13 +133,46 @@ namespace GaGa
             audioMenuItem.DropDownItems.Add(balanceTrackBar);
             audioMenuItem.DropDownItems.Add(volumeTrackBar);
 
+            // options submenu:
+            optionsMenuItem = new ToolStripMenuItem();
+            optionsMenuItem.Text = "Options";
+
+            optionsEnableAutoPlayItem = new ToolStripMenuItem();
+            optionsEnableAutoPlayItem.Text = "Enable auto play on startup";
+            optionsEnableAutoPlayItem.CheckOnClick = true;
+
+            optionsEnableMultimediaKeysItem = new ToolStripMenuItem();
+            optionsEnableMultimediaKeysItem.Text = "Enable multimedia keys";
+            optionsEnableMultimediaKeysItem.CheckOnClick = true;
+            optionsEnableMultimediaKeysItem.CheckedChanged += OnEnableMultimediaKeysItemCheckedChanged;
+
+            optionsMenuItem.DropDownItems.Add(optionsEnableAutoPlayItem);
+            optionsMenuItem.DropDownItems.Add(optionsEnableMultimediaKeysItem);
+
+            // add multimedia keys:
+            KeyboardHook.Hooker.Add("Toggle Play", Keys.MediaPlayPause);
+            KeyboardHook.Hooker.Add("Stop", Keys.MediaStop);
+            KeyboardHook.Hooker.Add("Toggle Mute", Keys.VolumeMute);
+            KeyboardHook.Hooker.Add("Volume Up", Keys.VolumeUp);
+            KeyboardHook.Hooker.Add("Volume Down", Keys.VolumeDown);
+            KeyboardHook.Hooker.HotkeyDown += OnHotkeyDown;
+
+            // apply settings:
+            player.Select(settings.LastPlayerStream);
+
+            balanceTrackBar.TrackBar.Value = settings.LastBalanceTrackBarValue;
+            volumeTrackBar.TrackBar.Value = settings.LastVolumeTrackBarValue;
+
             BalanceUpdate();
             VolumeUpdate();
 
-            // other items:
-            exitItem = new ToolStripMenuItem();
-            exitItem.Text = "E&xit";
-            exitItem.Click += OnExitItemClick;
+            optionsEnableAutoPlayItem.Checked = settings.OptionsEnableAutoPlayChecked;
+            optionsEnableMultimediaKeysItem.Checked = settings.OptionsEnableMultimediaKeysChecked;
+
+            if (optionsEnableAutoPlayItem.Checked)
+            {
+                player.Play();
+            }
         }
 
         ///
@@ -163,16 +202,16 @@ namespace GaGa
         ///
 
         /// <summary>
-        /// Load the settings from our streams filepath if it exists.
+        /// Load the settings from our settings filepath if it exists.
         /// Return default settings otherwise.
         /// </summary>
-        private Settings SettingsLoad()
+        private GaGaSettings SettingsLoad()
         {
             try
             {
                 if (File.Exists(settingsFilepath))
                 {
-                    return (Settings) Util.Deserialize(settingsFilepath);
+                    return (GaGaSettings) Util.Deserialize(settingsFilepath);
                 }
             }
             catch (Exception exception)
@@ -193,7 +232,7 @@ namespace GaGa
             }
 
             // unable to load or doesn't exist, use defaults:
-            return new Settings();
+            return new GaGaSettings();
         }
 
         /// <summary>
@@ -256,6 +295,7 @@ namespace GaGa
             menu.Items.Add(editItem);
             menu.Items.Add("-");
             menu.Items.Add(audioMenuItem);
+            menu.Items.Add(optionsMenuItem);
             menu.Items.Add(exitItem);
         }
 
@@ -321,6 +361,48 @@ namespace GaGa
         }
 
         ///
+        /// Multimedia keys hooking
+        ///
+
+        /// <summary>
+        /// Start the multimedia keys hook.
+        /// </summary>
+        private void MultimediaKeysHook()
+        {
+            try
+            {
+                KeyboardHook.Hooker.Hook();
+            }
+            catch (KeyboardHookException exception)
+            {
+                String text = exception.Message;
+                String caption = "Error hooking multimedia keys";
+                MessageBox.Show(text, caption, MessageBoxButtons.OK);
+            }
+        }
+
+        /// <summary>
+        /// Stop the multimedia keys hook.
+        /// </summary>
+        /// <param name="quiet">Ignore exceptions instead of showing a message.</param>
+        private void MultimediaKeysUnhook(Boolean quiet = false)
+        {
+            try
+            {
+                KeyboardHook.Hooker.Unhook();
+            }
+            catch (KeyboardHookException exception)
+            {
+                if (!quiet)
+                {
+                    String text = exception.Message;
+                    String caption = "Error unhooking multimedia keys";
+                    MessageBox.Show(text, caption, MessageBoxButtons.OK);
+                }
+            }
+        }
+
+        ///
         /// Events: icon
         ///
 
@@ -374,6 +456,37 @@ namespace GaGa
                 case MouseButtons.Right:
                 case MouseButtons.XButton1:
                 case MouseButtons.XButton2:
+                    break;
+            }
+        }
+
+        ///
+        /// Events: multimedia keys
+        ///
+
+        private void OnHotkeyDown(Object sender, KeyboardHookEventArgs e)
+        {
+            Int32 volume = volumeTrackBar.TrackBar.Value;
+            Int32 volume_max = volumeTrackBar.TrackBar.Maximum;
+            Int32 volume_min = volumeTrackBar.TrackBar.Minimum;
+            Int32 volume_step = volumeTrackBar.TrackBar.SmallChange;
+
+            switch (e.Name)
+            {
+                case "Toggle Play":
+                    player.TogglePlay();
+                    break;
+                case "Stop":
+                    player.Stop();
+                    break;
+                case "Toggle Mute":
+                    player.ToggleMute();
+                    break;
+                case "Volume Up":
+                    volumeTrackBar.TrackBar.Value = Math.Min(volume + volume_step, volume_max);
+                    break;
+                case "Volume Down":
+                    volumeTrackBar.TrackBar.Value = Math.Max(volume - volume_step, volume_min);
                     break;
             }
         }
@@ -457,6 +570,21 @@ namespace GaGa
         }
 
         /// <summary>
+        /// Multimedia keys clicked, toggle on or off.
+        /// </summary>
+        private void OnEnableMultimediaKeysItemCheckedChanged(Object sender, EventArgs e)
+        {
+            if (optionsEnableMultimediaKeysItem.Checked)
+            {
+                MultimediaKeysHook();
+            }
+            else
+            {
+                MultimediaKeysUnhook();
+            }
+        }
+
+        /// <summary>
         /// Exit clicked, stop playing, save settings, hide icon and exit.
         /// </summary>
         private void OnExitItemClick(Object sender, EventArgs e)
@@ -466,7 +594,15 @@ namespace GaGa
             settings.LastBalanceTrackBarValue = balanceTrackBar.TrackBar.Value;
             settings.LastVolumeTrackBarValue = volumeTrackBar.TrackBar.Value;
             settings.LastPlayerStream = player.Source;
+            settings.OptionsEnableAutoPlayChecked = optionsEnableAutoPlayItem.Checked;
+            settings.OptionsEnableMultimediaKeysChecked = optionsEnableMultimediaKeysItem.Checked;
             SettingsSave();
+
+            // unhook, but don't be annoying with error messages on shutdown:
+            if (optionsEnableMultimediaKeysItem.Checked)
+            {
+                MultimediaKeysUnhook(true);
+            }
 
             notifyIcon.Visible = false;
             Application.Exit();
