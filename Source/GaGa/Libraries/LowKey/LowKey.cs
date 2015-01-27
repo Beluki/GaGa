@@ -394,6 +394,17 @@ namespace LowKey
             hookID = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Determine whether the hook is currently active.
+        /// </summary>
+        public Boolean IsHooked
+        {
+            get
+            {
+                return hookID != IntPtr.Zero;
+            }
+        }
+
         ///
         /// Actual hooker callback
         ///

@@ -72,7 +72,7 @@ namespace GaGa.NotifyIconPlayer
         ///
 
         /// <summary>
-        /// Updates the notify icon icon and tooltip text
+        /// Updates the NotifyIcon icon and tooltip text
         /// depending on the current player state.
         /// </summary>
         private void UpdateIcon()

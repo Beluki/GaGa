@@ -44,7 +44,7 @@ namespace GaGa.StreamsFile
             {
                 return lastUpdated != File.GetLastWriteTimeUtc(filepath);
             }
-            // GetLastWriteTime() can raise exceptions
+            // GetLastWriteTimeUtc() can raise exceptions
             // despite returning a date when the file does not exist:
             catch (Exception)
             {
