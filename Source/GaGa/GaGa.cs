@@ -4,6 +4,7 @@
 
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -38,6 +39,7 @@ namespace GaGa
         private readonly Player player;
 
         // constant menu items:
+        private readonly ToolStripMenuItem dynamicMenuMarker;
         private readonly ToolStripMenuItem errorOpenItem;
         private readonly ToolStripMenuItem errorReadItem;
         private readonly ToolStripMenuItem editItem;
@@ -85,6 +87,9 @@ namespace GaGa
             player = new Player(notifyIcon);
 
             // constant menu items:
+            dynamicMenuMarker = new ToolStripMenuItem();
+            dynamicMenuMarker.Visible = false;
+
             errorOpenItem = new ToolStripMenuItem();
             errorOpenItem.Text = "Error opening streams file (click for details)";
 
@@ -171,7 +176,7 @@ namespace GaGa
             optionsEnableAutoPlayItem.CheckOnClick = true;
             optionsEnableMultimediaKeysItem.Click += OnEnableMultimediaKeysItemClicked;
 
-            KeyboardHook.Hooker.HotkeyUp += OnHotkeyDown;
+            KeyboardHook.Hooker.HotkeyDown += OnHotkeyDown;
 
             // handle options:
             if (optionsEnableAutoPlayItem.Checked)
@@ -275,6 +280,45 @@ namespace GaGa
         ///
 
         /// <summary>
+        /// Clear the current menu items, disposing
+        /// the dynamic items.
+        /// </summary>
+        private void MenuClear()
+        {
+            // collect dynamic items up to the marker:
+            List<ToolStripItem> disposable = new List<ToolStripItem>();
+
+            foreach (ToolStripItem item in notifyIcon.ContextMenuStrip.Items)
+            {
+                if (item == dynamicMenuMarker)
+                {
+                    break;
+                }
+                else
+                {
+                    disposable.Add(item);
+                }
+            }
+
+            // dispose them:
+            foreach (ToolStripItem item in disposable)
+            {
+                item.Dispose();
+            }
+
+            disposable.Clear();
+            notifyIcon.ContextMenuStrip.Items.Clear();
+
+            // at this point, all the menu items are dead
+            // perform GC to make memory usage as deterministic/predictable
+            // as possible:
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
+        /// <summary>
         /// Reload the context menu.
         /// </summary>
         private void MenuUpdate()
@@ -283,21 +327,27 @@ namespace GaGa
 
             try
             {
-                menu.Items.Clear();
+                MenuClear();
                 streamsFileLoader.LoadTo(menu, OnStreamItemClick);
+                menu.Items.Add(dynamicMenuMarker);
+
                 editItem.Enabled = true;
             }
             catch (StreamsFileReadError exception)
             {
-                menu.Items.Clear();
+                MenuClear();
+                menu.Items.Add(dynamicMenuMarker);
                 menu.Items.Add(errorReadItem);
+
                 errorReadItem.Tag = exception;
                 editItem.Enabled = true;
             }
             catch (Exception exception)
             {
-                menu.Items.Clear();
+                MenuClear();
+                menu.Items.Add(dynamicMenuMarker);
                 menu.Items.Add(errorOpenItem);
+
                 errorOpenItem.Tag = exception;
                 editItem.Enabled = false;
             }

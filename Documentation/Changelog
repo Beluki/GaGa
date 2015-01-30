@@ -1,6 +1,15 @@
 
 CHANGELOG
 
+* 2015/01/30:
+
+    - Fixed: dynamic menu items (those generated from the Streams.ini file)
+      weren't properly disposed before regenerating the menu, causing a
+      memory leak.
+
+    - Fixed: multimedia keys were handled on key release instead
+      of key press. This prevented key-repeat working on volume.
+
 * 2015/01/28:
 
     - Fixed a bug: when failing to hook/unhook the multimedia keys
