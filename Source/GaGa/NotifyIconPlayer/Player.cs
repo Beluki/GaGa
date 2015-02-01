@@ -149,13 +149,15 @@ namespace GaGa.NotifyIconPlayer
             // corner case:
             // if we only call .Stop(), the player continues downloading
             // from online streams, but .Close() calls _mediaState.Init()
-            // changing the volume, so save and restore it:
+            // changing the balance/volume, so save and restore them:
+            Double balance = player.Balance;
             Double volume = player.Volume;
 
             player.Stop();
             player.Close();
             player.IsMuted = false;
 
+            player.Balance = balance;
             player.Volume = volume;
 
             bufferingIconTimer.Stop();

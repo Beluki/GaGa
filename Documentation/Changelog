@@ -1,6 +1,10 @@
 
 CHANGELOG
 
+* 2015/02/01:
+
+    - Fixed: balance was resetting back to 0 on stop.
+
 * 2015/01/30:
 
     - Fixed: dynamic menu items (those generated from the Streams.ini file)
