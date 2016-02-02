@@ -5,7 +5,7 @@ GaGa is a very lightweight, simple online radio player that runs as an icon
 on the Windows tray. It's similar to [RadioTray][] for Linux. Here are two
 screenshots:
 
-![Screenshot1](https://raw.github.com/Beluki/GaGa/master/Screenshot/Screenshot1.png)
+![Screenshot1](Screenshot/Screenshot1.png)
 
 Left click on the icon toggles play/stop. Middle click (with the mouse wheel)
 toggles mute. Right click opens the menu with a list of streams. The icon
@@ -53,7 +53,7 @@ NoLife = http://nolife-radio.com/radio/NoLife-radio.m3u
 
 Which produces the following menu:
 
-![Screenshot2](https://raw.github.com/Beluki/GaGa/master/Screenshot/Screenshot2.png)
+![Screenshot2](Screenshot/Screenshot2.png)
 
 Scared of mistakes? Don't worry, GaGa will load an alternate menu with
 error details (including exact line) on any error. In the worst-case
@@ -106,7 +106,7 @@ I plan no further development on it other than maintenance.
 Like all my hobby projects, this is Free Software. See the [Documentation][]
 folder for more information. No warranty though.
 
-[Documentation]: https://github.com/Beluki/GaGa/tree/master/Documentation
+[Documentation]: Documentation
 [Releases]: https://github.com/Beluki/GaGa/releases
 
 [Mono]: http://mono-project.com

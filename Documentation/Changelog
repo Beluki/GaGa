@@ -1,6 +1,10 @@
 
 CHANGELOG
 
+* 2016/02/02:
+
+    - Revised. Working on VS2015 Community Edition and latest .NET Framework.
+
 * 2015/02/01:
 
     - Fixed: balance was resetting back to 0 on stop.
