@@ -359,8 +359,8 @@ namespace GaGa.NotifyIconPlayer
         {
             Stop();
 
-            String title = "Unable to play: " + Source.Name;
-            String text = e.ErrorException.Message + "\n" + Source.Uri;
+            String title = "Unable to play";
+            String text = e.ErrorException.Message;
 
             notifyIcon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
         }
