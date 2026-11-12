@@ -56,6 +56,7 @@
     <Compile Include="Controls\Util.cs" />
     <Compile Include="Libraries\LowKey\LowKey.cs" />
     <Compile Include="Libraries\mINI\mINI.cs" />
+    <Compile Include="NotifyIconPlayer\HttpsRelay.cs" />
     <Compile Include="NotifyIconPlayer\Player.cs" />
     <Compile Include="NotifyIconPlayer\PlayerStream.cs" />
     <Compile Include="NotifyIconPlayer\Util.cs" />

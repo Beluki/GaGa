@@ -19,6 +19,7 @@ namespace GaGa.NotifyIconPlayer
 
         private PlayerStream source;
         private Boolean isIdle;
+        private HttpsRelay relay;
 
         private readonly Icon idleIcon;
         private readonly Icon playingIcon;
@@ -128,12 +129,35 @@ namespace GaGa.NotifyIconPlayer
             if (source == null)
                 return;
 
-            player.Open(source.Uri);
+            // the WPF MediaPlayer can't open https:// itself,
+            // so https streams go through a local relay:
+            CloseRelay();
+            if (source.Uri.Scheme == Uri.UriSchemeHttps)
+            {
+                relay = new HttpsRelay(source.Uri);
+                player.Open(relay.LocalUri);
+            }
+            else
+            {
+                player.Open(source.Uri);
+            }
             player.Play();
             player.IsMuted = false;
 
             isIdle = false;
             UpdateIcon();
+        }
+
+        /// <summary>
+        /// Stop the https relay of the previous stream, if any.
+        /// </summary>
+        private void CloseRelay()
+        {
+            if (relay != null)
+            {
+                relay.Dispose();
+                relay = null;
+            }
         }
 
         /// <summary>
@@ -156,6 +180,7 @@ namespace GaGa.NotifyIconPlayer
             player.Stop();
             player.Close();
             player.IsMuted = false;
+            CloseRelay();
 
             player.Balance = balance;
             player.Volume = volume;
@@ -357,10 +382,13 @@ namespace GaGa.NotifyIconPlayer
         /// </summary>
         private void OnMediaFailed(Object sender, ExceptionEventArgs e)
         {
+            // for https streams the real reason is known by the relay:
+            String reason = (relay != null && relay.LastError != null) ? relay.LastError : e.ErrorException.Message;
+
             Stop();
 
             String title = "Unable to play: " + Source.Name;
-            String text = e.ErrorException.Message + "\n" + Source.Uri;
+            String text = reason + "\n" + Source.Uri;
 
             notifyIcon.ShowBalloonTip(10, title, text, ToolTipIcon.Error);
         }
