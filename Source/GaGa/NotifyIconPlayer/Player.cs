@@ -138,11 +138,11 @@ namespace GaGa.NotifyIconPlayer
             if (source == null)
                 return;
 
-            // the WPF MediaPlayer can't open https:// itself,
-            // so https streams go through a local relay:
+            // the WPF MediaPlayer can't open https:// and doesn't report track titles,
+            // so network streams go through a local relay (see HttpsRelay):
             CloseRelay();
             SetTitle(null);
-            if (source.Uri.Scheme == Uri.UriSchemeHttps)
+            if (source.Uri.Scheme == Uri.UriSchemeHttps || source.Uri.Scheme == Uri.UriSchemeHttp)
             {
                 HttpsRelay newRelay = new HttpsRelay(source.Uri);
                 newRelay.TitleChanged += (String newTitle) =>
@@ -441,7 +441,7 @@ namespace GaGa.NotifyIconPlayer
         /// </summary>
         private void OnMediaFailed(Object sender, ExceptionEventArgs e)
         {
-            // for https streams the real reason is known by the relay:
+            // for relayed streams the real reason is known by the relay:
             String reason = (relay != null && relay.LastError != null) ? relay.LastError : e.ErrorException.Message;
 
             Stop();
