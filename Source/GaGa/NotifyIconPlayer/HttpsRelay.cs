@@ -166,16 +166,37 @@ namespace GaGa.NotifyIconPlayer
                 if (String.IsNullOrEmpty(contentType))
                     contentType = "application/octet-stream";
 
-                WriteText(local,
-                    "HTTP/1.0 200 OK\r\n" +
-                    "Content-Type: " + contentType + "\r\n" +
-                    "Cache-Control: no-cache\r\n" +
-                    "Connection: close\r\n\r\n");
-
                 lastError = null;
 
                 using (Stream remote = response.GetResponseStream())
                 {
+                    // Ogg streams: the MediaPlayer can't read Ogg at all, but it plays
+                    // native FLAC, so Ogg FLAC is unwrapped on the fly (lossless, no re-encoding).
+                    // Anything else (including other Ogg codecs) is passed through unchanged.
+                    if (contentType.IndexOf("ogg", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        OggFlacRemuxer remuxer = new OggFlacRemuxer(remote);
+                        Boolean isFlac = remuxer.Start();
+
+                        WriteText(local,
+                            "HTTP/1.0 200 OK\r\n" +
+                            "Content-Type: " + (isFlac ? "audio/flac" : contentType) + "\r\n" +
+                            "Cache-Control: no-cache\r\n" +
+                            "Connection: close\r\n\r\n");
+
+                        if (isFlac)
+                            remuxer.CopyFlacTo(local, () => stopped);
+                        else
+                            remuxer.CopyRawTo(local, () => stopped);
+                        return;
+                    }
+
+                    WriteText(local,
+                        "HTTP/1.0 200 OK\r\n" +
+                        "Content-Type: " + contentType + "\r\n" +
+                        "Cache-Control: no-cache\r\n" +
+                        "Connection: close\r\n\r\n");
+
                     Byte[] buffer = new Byte[16384];
                     while (!stopped)
                     {
