@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.Serialization;
 
 using GaGa.NotifyIconPlayer;
 
@@ -40,6 +41,13 @@ namespace GaGa
         public Boolean OptionsEnableMultimediaKeysChecked;
 
         /// <summary>
+        /// Whether the track change notifications option is checked.
+        /// Optional: settings files from older versions don't have it.
+        /// </summary>
+        [OptionalField]
+        public Boolean OptionsEnableTrackNotificationsChecked;
+
+        /// <summary>
         /// Stores program settings.
         /// </summary>
         public GaGaSettings()
@@ -49,6 +57,16 @@ namespace GaGa
             LastPlayerStream = null;
             OptionsEnableAutoPlayChecked = false;
             OptionsEnableMultimediaKeysChecked = true;
+            OptionsEnableTrackNotificationsChecked = true;
+        }
+
+        /// <summary>
+        /// Defaults for fields missing in older settings files.
+        /// </summary>
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext context)
+        {
+            OptionsEnableTrackNotificationsChecked = true;
         }
     }
 }

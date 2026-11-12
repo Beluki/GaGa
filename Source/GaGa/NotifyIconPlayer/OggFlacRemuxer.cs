@@ -164,7 +164,7 @@ namespace GaGa.NotifyIconPlayer
         /// <summary>
         /// Write a native FLAC stream: "fLaC" + STREAMINFO, then audio frames.
         /// </summary>
-        public void CopyFlacTo(Stream output, Func<Boolean> stopped)
+        public void CopyFlacTo(Stream output, Func<Boolean> stopped, Action<String> onTitle)
         {
             sniffed = null;
 
@@ -188,6 +188,75 @@ namespace GaGa.NotifyIconPlayer
                     Byte[] frame = Renumber(p);
                     output.Write(frame, 0, frame.Length);
                 }
+
+                // VORBIS_COMMENT block (type 4): the tags of the current track,
+                // sent again at the start of every chained stream:
+                else if (p.Length > 4 && (p[0] & 0x7F) == 4 && onTitle != null)
+                {
+                    String title = ParseVorbisComment(p, 4);
+                    if (title != null)
+                        onTitle(title);
+                }
+            }
+        }
+
+        private static Int32 ReadInt32LE(Byte[] p, Int32 at)
+        {
+            return p[at] | (p[at + 1] << 8) | (p[at + 2] << 16) | (p[at + 3] << 24);
+        }
+
+        /// <summary>
+        /// Build "Artist - Title" from a Vorbis comment block
+        /// (vendor string, then "KEY=value" UTF-8 strings, lengths little-endian).
+        /// </summary>
+        internal static String ParseVorbisComment(Byte[] p, Int32 at)
+        {
+            try
+            {
+                Int32 vendorLength = ReadInt32LE(p, at);
+                if (vendorLength < 0)
+                    return null;
+
+                at += 4 + vendorLength;
+                Int32 count = ReadInt32LE(p, at);
+                at += 4;
+
+                String artist = null;
+                String title = null;
+
+                for (Int32 i = 0; i < count && at + 4 <= p.Length; i++)
+                {
+                    Int32 length = ReadInt32LE(p, at);
+                    at += 4;
+                    if (length < 0 || at + length > p.Length)
+                        break;
+
+                    String comment = System.Text.Encoding.UTF8.GetString(p, at, length);
+                    at += length;
+
+                    Int32 equals = comment.IndexOf('=');
+                    if (equals <= 0)
+                        continue;
+
+                    String key = comment.Substring(0, equals);
+                    String value = comment.Substring(equals + 1).Trim();
+                    if (value.Length == 0)
+                        continue;
+
+                    if (artist == null && key.Equals("ARTIST", StringComparison.OrdinalIgnoreCase))
+                        artist = value;
+                    else if (title == null && key.Equals("TITLE", StringComparison.OrdinalIgnoreCase))
+                        title = value;
+                }
+
+                if (artist != null && title != null)
+                    return artist + " - " + title;
+
+                return title ?? artist;
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
             }
         }
 

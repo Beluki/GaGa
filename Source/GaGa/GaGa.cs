@@ -39,6 +39,8 @@ namespace GaGa
         private readonly Player player;
 
         // constant menu items:
+        private readonly ToolStripMenuItem nowPlayingItem;
+        private readonly ToolStripSeparator nowPlayingSeparator;
         private readonly ToolStripMenuItem dynamicMenuMarker;
         private readonly ToolStripMenuItem errorOpenItem;
         private readonly ToolStripMenuItem errorReadItem;
@@ -54,6 +56,7 @@ namespace GaGa
         private readonly ToolStripMenuItem optionsMenuItem;
         private readonly ToolStripMenuItem optionsEnableAutoPlayItem;
         private readonly ToolStripMenuItem optionsEnableMultimediaKeysItem;
+        private readonly ToolStripMenuItem optionsEnableTrackNotificationsItem;
 
         /// <summary>
         /// GaGa implementation.
@@ -87,6 +90,14 @@ namespace GaGa
             player = new Player(notifyIcon);
 
             // constant menu items:
+            nowPlayingItem = new ToolStripMenuItem();
+            nowPlayingItem.Font = new Font(nowPlayingItem.Font, FontStyle.Bold);
+            nowPlayingItem.ToolTipText = "Click to copy";
+            nowPlayingItem.Available = false;
+
+            nowPlayingSeparator = new ToolStripSeparator();
+            nowPlayingSeparator.Available = false;
+
             dynamicMenuMarker = new ToolStripMenuItem();
             dynamicMenuMarker.Visible = false;
 
@@ -139,8 +150,12 @@ namespace GaGa
             optionsEnableMultimediaKeysItem = new ToolStripMenuItem();
             optionsEnableMultimediaKeysItem.Text = "Enable multimedia keys";
 
+            optionsEnableTrackNotificationsItem = new ToolStripMenuItem();
+            optionsEnableTrackNotificationsItem.Text = "Notify when the track changes";
+
             optionsMenuItem.DropDownItems.Add(optionsEnableAutoPlayItem);
             optionsMenuItem.DropDownItems.Add(optionsEnableMultimediaKeysItem);
+            optionsMenuItem.DropDownItems.Add(optionsEnableTrackNotificationsItem);
 
             // add multimedia keys:
             KeyboardHook.Hooker.Add("Toggle Play", Keys.MediaPlayPause);
@@ -160,6 +175,7 @@ namespace GaGa
 
             optionsEnableAutoPlayItem.Checked = settings.OptionsEnableAutoPlayChecked;
             optionsEnableMultimediaKeysItem.Checked = settings.OptionsEnableMultimediaKeysChecked;
+            optionsEnableTrackNotificationsItem.Checked = settings.OptionsEnableTrackNotificationsChecked;
 
             // wire events:
             notifyIcon.ContextMenuStrip.Opening += OnMenuOpening;
@@ -169,11 +185,14 @@ namespace GaGa
             errorReadItem.Click += OnErrorReadItemClick;
             editItem.Click += OnEditItemClick;
             exitItem.Click += OnExitItemClick;
+            nowPlayingItem.Click += OnNowPlayingItemClick;
+            player.TitleChanged += OnPlayerTitleChanged;
 
             balanceTrackBar.TrackBar.ValueChanged += OnBalanceTrackBarChanged;
             volumeTrackBar.TrackBar.ValueChanged += OnVolumeTrackBarChanged;
 
             optionsEnableAutoPlayItem.CheckOnClick = true;
+            optionsEnableTrackNotificationsItem.CheckOnClick = true;
             optionsEnableMultimediaKeysItem.Click += OnEnableMultimediaKeysItemClicked;
 
             KeyboardHook.Hooker.HotkeyDown += OnHotkeyDown;
@@ -294,7 +313,7 @@ namespace GaGa
                 {
                     break;
                 }
-                else
+                else if (item != nowPlayingItem && item != nowPlayingSeparator)
                 {
                     disposable.Add(item);
                 }
@@ -328,6 +347,8 @@ namespace GaGa
             try
             {
                 MenuClear();
+                menu.Items.Add(nowPlayingItem);
+                menu.Items.Add(nowPlayingSeparator);
                 streamsFileLoader.LoadTo(menu, OnStreamItemClick);
                 menu.Items.Add(dynamicMenuMarker);
 
@@ -336,6 +357,8 @@ namespace GaGa
             catch (StreamsFileReadError exception)
             {
                 MenuClear();
+                menu.Items.Add(nowPlayingItem);
+                menu.Items.Add(nowPlayingSeparator);
                 menu.Items.Add(dynamicMenuMarker);
                 menu.Items.Add(errorReadItem);
 
@@ -345,6 +368,8 @@ namespace GaGa
             catch (Exception exception)
             {
                 MenuClear();
+                menu.Items.Add(nowPlayingItem);
+                menu.Items.Add(nowPlayingSeparator);
                 menu.Items.Add(dynamicMenuMarker);
                 menu.Items.Add(errorOpenItem);
 
@@ -382,6 +407,55 @@ namespace GaGa
             notifyIcon.ContextMenuStrip.ResumeLayout();
             e.Cancel = false;
             notifyIcon.ShowContextMenuStrip(position);
+        }
+
+        ///
+        /// Now playing
+        ///
+
+        /// <summary>
+        /// The stream announced a new track: show it on top of the menu
+        /// and, when enabled, in a small notification over the tray.
+        /// </summary>
+        private void OnPlayerTitleChanged(Object sender, EventArgs e)
+        {
+            String title = player.Title;
+
+            if (title == null)
+            {
+                nowPlayingItem.Available = false;
+                nowPlayingSeparator.Available = false;
+                return;
+            }
+
+            // '&' would be taken as a menu mnemonic:
+            String text = (title.Length > 80) ? (title.Substring(0, 77) + "...") : title;
+            nowPlayingItem.Text = text.Replace("&", "&&");
+            nowPlayingItem.Available = true;
+            nowPlayingSeparator.Available = true;
+
+            if (optionsEnableTrackNotificationsItem.Checked && player.Source != null)
+            {
+                notifyIcon.ShowBalloonTip(5000, player.Source.Name, title, ToolTipIcon.None);
+            }
+        }
+
+        /// <summary>
+        /// Now playing clicked, copy the track title to the clipboard.
+        /// </summary>
+        private void OnNowPlayingItemClick(Object sender, EventArgs e)
+        {
+            if (player.Title == null)
+                return;
+
+            try
+            {
+                Clipboard.SetText(player.Title);
+            }
+            catch (Exception)
+            {
+                // clipboard busy, not worth an error message
+            }
         }
 
         ///
@@ -673,6 +747,7 @@ namespace GaGa
             settings.LastPlayerStream = player.Source;
             settings.OptionsEnableAutoPlayChecked = optionsEnableAutoPlayItem.Checked;
             settings.OptionsEnableMultimediaKeysChecked = optionsEnableMultimediaKeysItem.Checked;
+            settings.OptionsEnableTrackNotificationsChecked = optionsEnableTrackNotificationsItem.Checked;
             SettingsSave();
 
             // unhook, but don't be annoying with error messages on shutdown:

@@ -20,6 +20,8 @@ namespace GaGa.NotifyIconPlayer
         private PlayerStream source;
         private Boolean isIdle;
         private HttpsRelay relay;
+        private String title;
+        private readonly Dispatcher dispatcher;
 
         private readonly Icon idleIcon;
         private readonly Icon playingIcon;
@@ -39,6 +41,7 @@ namespace GaGa.NotifyIconPlayer
         public Player(NotifyIcon icon)
         {
             notifyIcon = icon;
+            dispatcher = Dispatcher.CurrentDispatcher;
 
             player = new MediaPlayer();
             player.BufferingStarted += OnBufferingStarted;
@@ -111,6 +114,12 @@ namespace GaGa.NotifyIconPlayer
                 text += source.Name;
             }
 
+            // current track, when the stream announces it:
+            if (!isIdle && title != null)
+            {
+                text += "\n" + title;
+            }
+
             notifyIcon.Icon = icon;
             notifyIcon.SetToolTipText(text);
         }
@@ -132,9 +141,14 @@ namespace GaGa.NotifyIconPlayer
             // the WPF MediaPlayer can't open https:// itself,
             // so https streams go through a local relay:
             CloseRelay();
+            SetTitle(null);
             if (source.Uri.Scheme == Uri.UriSchemeHttps)
             {
-                relay = new HttpsRelay(source.Uri);
+                HttpsRelay newRelay = new HttpsRelay(source.Uri);
+                newRelay.TitleChanged += (String newTitle) =>
+                    dispatcher.BeginInvoke(new Action(() => OnRelayTitleChanged(newRelay, newTitle)));
+
+                relay = newRelay;
                 player.Open(relay.LocalUri);
             }
             else
@@ -158,6 +172,50 @@ namespace GaGa.NotifyIconPlayer
                 relay.Dispose();
                 relay = null;
             }
+        }
+
+        ///
+        /// Track title
+        ///
+
+        /// <summary>
+        /// Raised (on the UI thread) when the title of the
+        /// track playing on the current stream changes.
+        /// </summary>
+        public event EventHandler TitleChanged;
+
+        /// <summary>
+        /// Title of the track playing on the current stream,
+        /// or null when unknown or idle.
+        /// </summary>
+        public String Title
+        {
+            get
+            {
+                return title;
+            }
+        }
+
+        private void SetTitle(String newTitle)
+        {
+            if (newTitle == title)
+                return;
+
+            title = newTitle;
+            UpdateIcon();
+
+            EventHandler handler = TitleChanged;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
+        }
+
+        private void OnRelayTitleChanged(HttpsRelay sender, String newTitle)
+        {
+            // ignore late titles from a stream that was already closed:
+            if (sender != relay || isIdle)
+                return;
+
+            SetTitle(newTitle);
         }
 
         /// <summary>
@@ -190,6 +248,7 @@ namespace GaGa.NotifyIconPlayer
 
             isIdle = true;
             UpdateIcon();
+            SetTitle(null);
         }
 
         /// <summary>

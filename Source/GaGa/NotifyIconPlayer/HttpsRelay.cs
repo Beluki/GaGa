@@ -74,6 +74,20 @@ namespace GaGa.NotifyIconPlayer
             get { return lastError; }
         }
 
+        /// <summary>
+        /// Raised when the stream announces the current track title
+        /// (ICY StreamTitle for MP3/AAC, Vorbis comments for Ogg FLAC).
+        /// Called from a relay thread, not the UI thread.
+        /// </summary>
+        public event Action<String> TitleChanged;
+
+        private void ReportTitle(String title)
+        {
+            Action<String> handler = TitleChanged;
+            if (handler != null && !stopped && !String.IsNullOrEmpty(title))
+                handler(title);
+        }
+
         private void AcceptLoop()
         {
             while (!stopped)
@@ -147,6 +161,9 @@ namespace GaGa.NotifyIconPlayer
                 request.Timeout = 15000;
                 request.ReadWriteTimeout = 30000;
 
+                // ask for in-band track titles (Icecast/SHOUTcast, ignored for Ogg):
+                request.Headers.Add("Icy-MetaData", "1");
+
                 try
                 {
                     response = (HttpWebResponse) request.GetResponse();
@@ -185,7 +202,7 @@ namespace GaGa.NotifyIconPlayer
                             "Connection: close\r\n\r\n");
 
                         if (isFlac)
-                            remuxer.CopyFlacTo(local, () => stopped);
+                            remuxer.CopyFlacTo(local, () => stopped, ReportTitle);
                         else
                             remuxer.CopyRawTo(local, () => stopped);
                         return;
@@ -197,14 +214,33 @@ namespace GaGa.NotifyIconPlayer
                         "Cache-Control: no-cache\r\n" +
                         "Connection: close\r\n\r\n");
 
+                    // with "icy-metaint: N" the server inserts a metadata block
+                    // after every N audio bytes; it is removed before the player sees it:
+                    Int32 metaInterval;
+                    if (!Int32.TryParse(response.Headers["icy-metaint"], out metaInterval) || metaInterval <= 0)
+                        metaInterval = 0;
+
                     Byte[] buffer = new Byte[16384];
+                    Int32 untilMeta = metaInterval;
                     while (!stopped)
                     {
-                        Int32 read = remote.Read(buffer, 0, buffer.Length);
+                        Int32 wanted = (metaInterval > 0) ? Math.Min(buffer.Length, untilMeta) : buffer.Length;
+                        Int32 read = remote.Read(buffer, 0, wanted);
                         if (read <= 0)
                             break;
 
                         local.Write(buffer, 0, read);
+
+                        if (metaInterval > 0)
+                        {
+                            untilMeta -= read;
+                            if (untilMeta == 0)
+                            {
+                                if (!ReadIcyMetadata(remote))
+                                    break;
+                                untilMeta = metaInterval;
+                            }
+                        }
                     }
                 }
             }
@@ -221,6 +257,75 @@ namespace GaGa.NotifyIconPlayer
 
                 client.Close();
             }
+        }
+
+        /// <summary>
+        /// Read one ICY metadata block (length byte * 16, then text like
+        /// "StreamTitle='Artist - Title';") and report the title.
+        /// Returns false when the remote stream ended.
+        /// </summary>
+        private Boolean ReadIcyMetadata(Stream remote)
+        {
+            Int32 length = remote.ReadByte();
+            if (length < 0)
+                return false;
+
+            length *= 16;
+            if (length == 0)
+                return true;
+
+            Byte[] data = new Byte[length];
+            Int32 done = 0;
+            while (done < length)
+            {
+                Int32 read = remote.Read(data, done, length - done);
+                if (read <= 0)
+                    return false;
+                done += read;
+            }
+
+            String title = ParseStreamTitle(data);
+            if (title != null)
+                ReportTitle(title);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Extract StreamTitle from an ICY metadata block.
+        /// UTF-8 when valid, Latin-1 otherwise (older servers).
+        /// </summary>
+        internal static String ParseStreamTitle(Byte[] data)
+        {
+            Int32 count = data.Length;
+            while (count > 0 && data[count - 1] == 0)
+                count--;
+
+            String text;
+            try
+            {
+                text = new UTF8Encoding(false, true).GetString(data, 0, count);
+            }
+            catch (ArgumentException)
+            {
+                text = Encoding.GetEncoding(28591).GetString(data, 0, count);
+            }
+
+            const String key = "StreamTitle='";
+            Int32 start = text.IndexOf(key, StringComparison.OrdinalIgnoreCase);
+            if (start < 0)
+                return null;
+
+            start += key.Length;
+
+            // the title itself may contain quotes, so look for the field end:
+            Int32 end = text.IndexOf("';", start, StringComparison.Ordinal);
+            if (end < 0)
+                end = text.LastIndexOf('\'');
+            if (end < start)
+                return null;
+
+            return text.Substring(start, end - start).Trim();
         }
 
         /// <summary>
